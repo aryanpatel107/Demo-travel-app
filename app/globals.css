@@ -1,0 +1,44 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #16241f;
+  --color-teal: #0e5c56;
+  --color-teal-dark: #0a413d;
+  --color-sand: #f6f2e9;
+  --color-coral: #e85c3f;
+  --color-gold: #c89b3c;
+  --color-cloud: #dce3de;
+
+  --font-display: var(--font-fraunces), Georgia, serif;
+  --font-body: var(--font-inter), system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), "Courier New", monospace;
+}
+
+@layer base {
+  * {
+    @apply border-cloud;
+  }
+
+  body {
+    @apply bg-sand text-ink;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-coral);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background-color: var(--color-coral);
+    color: var(--color-sand);
+  }
+}
+
+@layer utilities {
+  .perforation {
+    background-image: radial-gradient(circle, var(--color-sand) 3px, transparent 3px);
+    background-size: 14px 14px;
+    background-repeat: repeat-x;
+    background-position: center;
+  }
+}
