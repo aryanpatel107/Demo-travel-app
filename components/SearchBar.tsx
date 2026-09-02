@@ -18,11 +18,17 @@ export default function SearchBar({ onSearch, placeholder }: SearchBarProps) {
 
   return (
     <div className="mx-auto max-w-xl">
+      <label htmlFor="destination-search" className="sr-only">
+        Search destinations
+      </label>
       <input
-        type="text"
+        id="destination-search"
+        name="destination-search"
+        type="search"
         value={query}
         onChange={handleChange}
         placeholder={placeholder ?? "Search destinations..."}
+        aria-label="Search destinations"
         className="w-full rounded-full border border-cloud bg-white px-5 py-3 text-sm shadow-sm focus:border-teal focus:outline-none focus:ring-2 focus:ring-teal/20"
       />
     </div>

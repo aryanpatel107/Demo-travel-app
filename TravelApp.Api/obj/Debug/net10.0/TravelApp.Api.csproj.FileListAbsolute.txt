@@ -6,7 +6,9 @@ C:\Users\Aryan\OneDrive\Desktop\Demotravel\travel-app\TravelApp.Api\bin\Debug\ne
 C:\Users\Aryan\OneDrive\Desktop\Demotravel\travel-app\TravelApp.Api\bin\Debug\net10.0\TravelApp.Api.runtimeconfig.json
 C:\Users\Aryan\OneDrive\Desktop\Demotravel\travel-app\TravelApp.Api\bin\Debug\net10.0\TravelApp.Api.dll
 C:\Users\Aryan\OneDrive\Desktop\Demotravel\travel-app\TravelApp.Api\bin\Debug\net10.0\TravelApp.Api.pdb
+C:\Users\Aryan\OneDrive\Desktop\Demotravel\travel-app\TravelApp.Api\bin\Debug\net10.0\BCrypt.Net-Next.dll
 C:\Users\Aryan\OneDrive\Desktop\Demotravel\travel-app\TravelApp.Api\bin\Debug\net10.0\Humanizer.dll
+C:\Users\Aryan\OneDrive\Desktop\Demotravel\travel-app\TravelApp.Api\bin\Debug\net10.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
 C:\Users\Aryan\OneDrive\Desktop\Demotravel\travel-app\TravelApp.Api\bin\Debug\net10.0\Microsoft.AspNetCore.OpenApi.dll
 C:\Users\Aryan\OneDrive\Desktop\Demotravel\travel-app\TravelApp.Api\bin\Debug\net10.0\Microsoft.Build.Framework.dll
 C:\Users\Aryan\OneDrive\Desktop\Demotravel\travel-app\TravelApp.Api\bin\Debug\net10.0\Microsoft.CodeAnalysis.dll
@@ -22,6 +24,12 @@ C:\Users\Aryan\OneDrive\Desktop\Demotravel\travel-app\TravelApp.Api\bin\Debug\ne
 C:\Users\Aryan\OneDrive\Desktop\Demotravel\travel-app\TravelApp.Api\bin\Debug\net10.0\Microsoft.EntityFrameworkCore.Relational.dll
 C:\Users\Aryan\OneDrive\Desktop\Demotravel\travel-app\TravelApp.Api\bin\Debug\net10.0\Microsoft.EntityFrameworkCore.Sqlite.dll
 C:\Users\Aryan\OneDrive\Desktop\Demotravel\travel-app\TravelApp.Api\bin\Debug\net10.0\Microsoft.Extensions.DependencyModel.dll
+C:\Users\Aryan\OneDrive\Desktop\Demotravel\travel-app\TravelApp.Api\bin\Debug\net10.0\Microsoft.IdentityModel.Abstractions.dll
+C:\Users\Aryan\OneDrive\Desktop\Demotravel\travel-app\TravelApp.Api\bin\Debug\net10.0\Microsoft.IdentityModel.JsonWebTokens.dll
+C:\Users\Aryan\OneDrive\Desktop\Demotravel\travel-app\TravelApp.Api\bin\Debug\net10.0\Microsoft.IdentityModel.Logging.dll
+C:\Users\Aryan\OneDrive\Desktop\Demotravel\travel-app\TravelApp.Api\bin\Debug\net10.0\Microsoft.IdentityModel.Protocols.dll
+C:\Users\Aryan\OneDrive\Desktop\Demotravel\travel-app\TravelApp.Api\bin\Debug\net10.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+C:\Users\Aryan\OneDrive\Desktop\Demotravel\travel-app\TravelApp.Api\bin\Debug\net10.0\Microsoft.IdentityModel.Tokens.dll
 C:\Users\Aryan\OneDrive\Desktop\Demotravel\travel-app\TravelApp.Api\bin\Debug\net10.0\Microsoft.OpenApi.dll
 C:\Users\Aryan\OneDrive\Desktop\Demotravel\travel-app\TravelApp.Api\bin\Debug\net10.0\Microsoft.VisualStudio.SolutionPersistence.dll
 C:\Users\Aryan\OneDrive\Desktop\Demotravel\travel-app\TravelApp.Api\bin\Debug\net10.0\Mono.TextTemplating.dll
@@ -38,6 +46,7 @@ C:\Users\Aryan\OneDrive\Desktop\Demotravel\travel-app\TravelApp.Api\bin\Debug\ne
 C:\Users\Aryan\OneDrive\Desktop\Demotravel\travel-app\TravelApp.Api\bin\Debug\net10.0\System.Composition.Hosting.dll
 C:\Users\Aryan\OneDrive\Desktop\Demotravel\travel-app\TravelApp.Api\bin\Debug\net10.0\System.Composition.Runtime.dll
 C:\Users\Aryan\OneDrive\Desktop\Demotravel\travel-app\TravelApp.Api\bin\Debug\net10.0\System.Composition.TypedParts.dll
+C:\Users\Aryan\OneDrive\Desktop\Demotravel\travel-app\TravelApp.Api\bin\Debug\net10.0\System.IdentityModel.Tokens.Jwt.dll
 C:\Users\Aryan\OneDrive\Desktop\Demotravel\travel-app\TravelApp.Api\bin\Debug\net10.0\cs\Microsoft.CodeAnalysis.resources.dll
 C:\Users\Aryan\OneDrive\Desktop\Demotravel\travel-app\TravelApp.Api\bin\Debug\net10.0\de\Microsoft.CodeAnalysis.resources.dll
 C:\Users\Aryan\OneDrive\Desktop\Demotravel\travel-app\TravelApp.Api\bin\Debug\net10.0\es\Microsoft.CodeAnalysis.resources.dll
@@ -133,6 +142,7 @@ C:\Users\Aryan\OneDrive\Desktop\Demotravel\travel-app\TravelApp.Api\obj\Debug\ne
 C:\Users\Aryan\OneDrive\Desktop\Demotravel\travel-app\TravelApp.Api\obj\Debug\net10.0\TravelApp.Api.csproj.CoreCompileInputs.cache
 C:\Users\Aryan\OneDrive\Desktop\Demotravel\travel-app\TravelApp.Api\obj\Debug\net10.0\TravelApp.Api.MvcApplicationPartsAssemblyInfo.cs
 C:\Users\Aryan\OneDrive\Desktop\Demotravel\travel-app\TravelApp.Api\obj\Debug\net10.0\TravelApp.Api.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\Aryan\OneDrive\Desktop\Demotravel\travel-app\TravelApp.Api\obj\Debug\net10.0\TravelApp.Api.sourcelink.json
 C:\Users\Aryan\OneDrive\Desktop\Demotravel\travel-app\TravelApp.Api\obj\Debug\net10.0\rjimswa.dswa.cache.json
 C:\Users\Aryan\OneDrive\Desktop\Demotravel\travel-app\TravelApp.Api\obj\Debug\net10.0\rjsmrazor.dswa.cache.json
 C:\Users\Aryan\OneDrive\Desktop\Demotravel\travel-app\TravelApp.Api\obj\Debug\net10.0\rjsmcshtml.dswa.cache.json

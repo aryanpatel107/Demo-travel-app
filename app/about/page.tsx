@@ -7,7 +7,7 @@ export default function AboutPage() {
         Wanderly is a travel planning platform built for explorers who want more than a
         checklist of tourist spots. We curate destinations based on real experiences,
         connect you with trip-planning tools, and help you turn inspiration into an
-        itinerary. Whether you're chasing mountain trails or quiet coastlines, Wanderly
+        itinerary. Whether you are chasing mountain trails or quiet coastlines, Wanderly
         is here to help you get there.
       </p>
       <p className="mt-4 leading-relaxed text-ink/80">

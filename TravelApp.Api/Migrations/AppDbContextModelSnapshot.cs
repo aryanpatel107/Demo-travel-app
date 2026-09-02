@@ -17,6 +17,62 @@ namespace TravelApp.Api.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.11");
 
+            modelBuilder.Entity("TravelApp.Api.Models.Brand", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Slug")
+                        .IsUnique();
+
+                    b.ToTable("Brands");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "wanderly",
+                            CreatedAt = new DateTime(2026, 9, 1, 10, 48, 23, 433, DateTimeKind.Utc).AddTicks(5572),
+                            IsActive = true,
+                            Name = "Wanderly",
+                            Slug = "wanderly"
+                        },
+                        new
+                        {
+                            Id = "travelpro",
+                            CreatedAt = new DateTime(2026, 9, 1, 10, 48, 23, 433, DateTimeKind.Utc).AddTicks(7450),
+                            IsActive = true,
+                            Name = "TravelPro",
+                            Slug = "travelpro"
+                        },
+                        new
+                        {
+                            Id = "mytravel",
+                            CreatedAt = new DateTime(2026, 9, 1, 10, 48, 23, 433, DateTimeKind.Utc).AddTicks(7456),
+                            IsActive = true,
+                            Name = "MyTravel",
+                            Slug = "mytravel"
+                        });
+                });
+
             modelBuilder.Entity("TravelApp.Api.Models.ContactMessage", b =>
                 {
                     b.Property<string>("Id")
@@ -50,15 +106,22 @@ namespace TravelApp.Api.Migrations
                     b.Property<int>("Amount")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("BrandId")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Currency")
                         .IsRequired()
+                        .HasMaxLength(16)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Provider")
                         .IsRequired()
+                        .HasMaxLength(64)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Status")
@@ -67,12 +130,25 @@ namespace TravelApp.Api.Migrations
 
                     b.Property<string>("TripId")
                         .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(128)
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
                     b.HasIndex("TripId")
                         .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("BrandId", "TripId");
 
                     b.ToTable("Payments");
                 });
@@ -82,15 +158,22 @@ namespace TravelApp.Api.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("BrandId")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("DestinationId")
                         .IsRequired()
+                        .HasMaxLength(128)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("DestinationName")
                         .IsRequired()
+                        .HasMaxLength(256)
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("EndDate")
@@ -109,25 +192,142 @@ namespace TravelApp.Api.Migrations
                     b.Property<int>("Travelers")
                         .HasColumnType("INTEGER");
 
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("BrandId");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("BrandId", "UserId");
 
                     b.ToTable("Trips");
                 });
 
+            modelBuilder.Entity("TravelApp.Api.Models.User", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("BrandId")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BrandId");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.ToTable("Users");
+                });
+
             modelBuilder.Entity("TravelApp.Api.Models.Payment", b =>
                 {
+                    b.HasOne("TravelApp.Api.Models.Brand", "Brand")
+                        .WithMany()
+                        .HasForeignKey("BrandId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("TravelApp.Api.Models.Trip", "Trip")
                         .WithOne("Payment")
                         .HasForeignKey("TravelApp.Api.Models.Payment", "TripId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("TravelApp.Api.Models.User", "User")
+                        .WithMany("Payments")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Brand");
+
                     b.Navigation("Trip");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("TravelApp.Api.Models.Trip", b =>
+                {
+                    b.HasOne("TravelApp.Api.Models.Brand", "Brand")
+                        .WithMany("Trips")
+                        .HasForeignKey("BrandId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TravelApp.Api.Models.User", "User")
+                        .WithMany("Trips")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Brand");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("TravelApp.Api.Models.User", b =>
+                {
+                    b.HasOne("TravelApp.Api.Models.Brand", "Brand")
+                        .WithMany("Users")
+                        .HasForeignKey("BrandId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Brand");
+                });
+
+            modelBuilder.Entity("TravelApp.Api.Models.Brand", b =>
+                {
+                    b.Navigation("Trips");
+
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("TravelApp.Api.Models.Trip", b =>
                 {
                     b.Navigation("Payment");
+                });
+
+            modelBuilder.Entity("TravelApp.Api.Models.User", b =>
+                {
+                    b.Navigation("Payments");
+
+                    b.Navigation("Trips");
                 });
 #pragma warning restore 612, 618
         }

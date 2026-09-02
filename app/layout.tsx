@@ -3,6 +3,9 @@ import { Fraunces, Inter, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import BrandStartup from "@/components/BrandStartup";
+import { AuthProvider } from "@/components/auth/AuthProvider";
+import { config } from "@/config";
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -23,8 +26,19 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Wanderly | Discover Your Next Trip",
-  description: "Plan and explore unforgettable travel destinations.",
+  title: config.metadata.title,
+  description: config.metadata.description,
+  openGraph: {
+    title: config.metadata.title,
+    description: config.metadata.description,
+    siteName: config.name,
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: config.metadata.title,
+    description: config.metadata.description,
+  },
 };
 
 export default function RootLayout({
@@ -35,9 +49,12 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${fraunces.variable} ${inter.variable} ${plexMono.variable}`}>
       <body className="flex min-h-screen flex-col bg-sand font-body text-ink antialiased">
-        <Navbar />
-        <main className="flex-1">{children}</main>
-        <Footer />
+        <AuthProvider>
+          <BrandStartup />
+          <Navbar />
+          <main className="flex-1">{children}</main>
+          <Footer />
+        </AuthProvider>
       </body>
     </html>
   );

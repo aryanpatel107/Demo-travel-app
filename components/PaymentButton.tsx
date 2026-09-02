@@ -20,8 +20,26 @@ export default function PaymentButton({ tripId, amount }: PaymentButtonProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ tripId, amount }),
       });
-      const data = await res.json();
-      if (data.checkoutUrl) router.push(data.checkoutUrl);
+
+      const responseText = await res.text();
+      if (!responseText) {
+        throw new Error("The payment service returned an empty response.");
+      }
+
+      const data = JSON.parse(responseText) as { checkoutUrl?: string; error?: string };
+
+      if (!res.ok) {
+        throw new Error(data.error ?? `Request failed with status ${res.status}`);
+      }
+
+      if (!data.checkoutUrl) {
+        throw new Error("The payment service did not return a checkout URL.");
+      }
+
+      router.push(data.checkoutUrl);
+    } catch (error) {
+      console.error("Payment checkout failed:", error);
+      alert(error instanceof Error ? error.message : "Payment checkout failed.");
     } finally {
       setLoading(false);
     }

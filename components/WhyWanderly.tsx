@@ -1,3 +1,5 @@
+import { config } from "@/config";
+
 const features = [
   {
     code: "01",
@@ -19,9 +21,9 @@ const features = [
 export default function WhyWanderly() {
   return (
     <section className="mx-auto max-w-6xl px-6 py-20">
-      <p className="font-mono text-xs uppercase tracking-widest text-coral">Why Wanderly</p>
+      <p className="font-mono text-xs uppercase tracking-widest text-coral">Why {config.name}</p>
       <h2 className="mt-2 max-w-xl font-display text-3xl font-semibold text-ink">
-        Travel planning that respects your time
+        {config.sectionTitles.benefits}
       </h2>
 
       <div className="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-3">

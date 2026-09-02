@@ -1,3 +1,5 @@
+import { config } from "@/config";
+
 const testimonials = [
   {
     quote: "Booked our Bali trip in ten minutes and the itinerary tool actually kept us organized the whole week.",
@@ -10,7 +12,7 @@ const testimonials = [
     location: "Oslo, Norway",
   },
   {
-    quote: "Patagonia was the trip of a lifetime. Wanderly's destination notes were more useful than any guidebook.",
+    quote: "Patagonia was the trip of a lifetime. The destination notes were more useful than any guidebook.",
     name: "T. Osei",
     location: "Accra, Ghana",
   },
@@ -22,7 +24,7 @@ export default function Testimonials() {
       <div className="mx-auto max-w-6xl px-6">
         <p className="font-mono text-xs uppercase tracking-widest text-gold">Postcards from travelers</p>
         <h2 className="mt-2 font-display text-3xl font-semibold text-sand">
-          Trusted by wanderers everywhere
+          {config.sectionTitles.testimonials}
         </h2>
 
         <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-3">

@@ -29,14 +29,16 @@ export default function ContactPage() {
 
       {submitted ? (
         <p className="rounded-2xl border border-cloud bg-white p-4 text-teal">
-          Thanks for reaching out! We'll get back to you soon.
+          Thanks for reaching out! We will get back to you soon.
         </p>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-5">
           {error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</p>}
           <div>
-            <label className="mb-1 block text-sm font-medium text-ink/70">Name</label>
+            <label htmlFor="contact-name" className="mb-1 block text-sm font-medium text-ink/70">Name</label>
             <input
+              id="contact-name"
+              name="name"
               required
               type="text"
               value={form.name}
@@ -45,8 +47,10 @@ export default function ContactPage() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-ink/70">Email</label>
+            <label htmlFor="contact-email" className="mb-1 block text-sm font-medium text-ink/70">Email</label>
             <input
+              id="contact-email"
+              name="email"
               required
               type="email"
               value={form.email}
@@ -55,8 +59,10 @@ export default function ContactPage() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-ink/70">Message</label>
+            <label htmlFor="contact-message" className="mb-1 block text-sm font-medium text-ink/70">Message</label>
             <textarea
+              id="contact-message"
+              name="message"
               required
               rows={5}
               value={form.message}
