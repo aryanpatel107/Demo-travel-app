@@ -57,6 +57,25 @@ public class AuthController : ControllerBase
         return "travelapp_auth";
     }
 
+    // Used by Login/Logout to determine which brand's site made the
+    // request. This is the SAME source of truth (X-Brand header) your
+    // frontend already sends on every apiFetch call — nothing new needed
+    // on the frontend for login/logout.
+    private static string? ResolveBrand(string? rawBrandId, string? rawBrand)
+    {
+        var candidate = string.IsNullOrWhiteSpace(rawBrandId) ? rawBrand : rawBrandId;
+        if (string.IsNullOrWhiteSpace(candidate)) return null;
+
+        var normalized = candidate.Trim();
+        return normalized.Equals("wanderly", StringComparison.OrdinalIgnoreCase)
+            ? "wanderly"
+            : normalized.Equals("travelpro", StringComparison.OrdinalIgnoreCase)
+                ? "travelpro"
+                : normalized.Equals("mytravel", StringComparison.OrdinalIgnoreCase)
+                    ? "mytravel"
+                    : null;
+    }
+
     [HttpPost("register")]
     public async Task<ActionResult<AuthUserDto>> Register([FromBody] RegisterRequestDto dto)
     {
@@ -69,14 +88,22 @@ public class AuthController : ControllerBase
         var normalizedEmail = dto.Email.Trim();
         if (!normalizedEmail.Contains('@')) return BadRequest(new { error = "A valid email is required." });
 
-        var resolvedBrandId = ResolveBrand(dto.BrandId, dto.Brand);
+        // Prefer the actual requesting site's brand (X-Brand header) over
+        // any brand value the client body might send — the client should
+        // never be able to register itself onto a brand other than the
+        // site it's actually on.
+        var brandFromHeader = Request.Headers["X-Brand"].FirstOrDefault();
+        var resolvedBrandId = ResolveBrand(brandFromHeader, null) ?? ResolveBrand(dto.BrandId, dto.Brand);
         if (resolvedBrandId is null) return BadRequest(new { error = "A valid brand is required: Wanderly, TravelPro, or MyTravel." });
-
-        var existingUser = await _db.Users.FirstOrDefaultAsync(u => u.Email == normalizedEmail);
-        if (existingUser is not null) return Conflict(new { error = "An account with that email already exists." });
 
         var brand = await _db.Brands.FirstOrDefaultAsync(b => b.Id == resolvedBrandId);
         if (brand is null) return BadRequest(new { error = "Selected brand is not supported." });
+
+        // Scoped by BOTH brand and email — the same email can now hold a
+        // separate account per brand, matching the composite unique index.
+        var existingUser = await _db.Users
+            .FirstOrDefaultAsync(u => u.Email == normalizedEmail && u.BrandId == resolvedBrandId);
+        if (existingUser is not null) return Conflict(new { error = "An account with that email already exists for this site." });
 
         var user = new User
         {
@@ -105,10 +132,22 @@ public class AuthController : ControllerBase
             return BadRequest(new { error = "Email and password are required." });
         }
 
+        // Must resolve the requesting brand and scope the lookup by it.
+        // Without this, once the same email can exist across multiple
+        // brands, this query becomes ambiguous and could authenticate
+        // you into the WRONG brand's account — reopening the exact
+        // cross-brand leak fixed earlier.
+        var brandFromHeader = Request.Headers["X-Brand"].FirstOrDefault();
+        var resolvedBrandId = ResolveBrand(brandFromHeader, null);
+        if (resolvedBrandId is null)
+        {
+            return BadRequest(new { error = "A valid brand is required." });
+        }
+
         var normalizedEmail = dto.Email.Trim();
         var user = await _db.Users
             .Include(u => u.Brand)
-            .FirstOrDefaultAsync(u => u.Email == normalizedEmail);
+            .FirstOrDefaultAsync(u => u.Email == normalizedEmail && u.BrandId == resolvedBrandId);
 
         if (user is null || !user.IsActive || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
         {
@@ -132,11 +171,13 @@ public class AuthController : ControllerBase
         return Ok(new AuthUserDto(user.Id, user.Name, user.Email, user.BrandId, user.Brand?.Name ?? user.BrandId, user.IsActive));
     }
 
+    [Authorize]
     [HttpPost("logout")]
     public IActionResult Logout()
     {
+        var brandFromClaim = User.FindFirstValue("brand_id");
         var brandFromHeader = Request.Headers["X-Brand"].FirstOrDefault();
-        var cookieName = GetBrandCookieName(brandFromHeader);
+        var cookieName = GetBrandCookieName(brandFromClaim ?? brandFromHeader);
 
         Response.Cookies.Delete(cookieName, new CookieOptions
         {
@@ -162,21 +203,13 @@ public class AuthController : ControllerBase
 
         if (user is null || !user.IsActive) return Unauthorized(new { error = "User is not active." });
 
+        var brandFromHeader = Request.Headers["X-Brand"].FirstOrDefault();
+        if (!string.IsNullOrWhiteSpace(brandFromHeader) &&
+            !string.Equals(brandFromHeader.Trim(), user.BrandId, StringComparison.OrdinalIgnoreCase))
+        {
+            return Unauthorized(new { error = "User is not authenticated." });
+        }
+
         return Ok(new CurrentUserDto(user.Id, user.Name, user.Email, user.BrandId, user.Brand?.Name ?? user.BrandId));
-    }
-
-    private static string? ResolveBrand(string? rawBrandId, string? rawBrand)
-    {
-        var candidate = string.IsNullOrWhiteSpace(rawBrandId) ? rawBrand : rawBrandId;
-        if (string.IsNullOrWhiteSpace(candidate)) return null;
-
-        var normalized = candidate.Trim();
-        return normalized.Equals("wanderly", StringComparison.OrdinalIgnoreCase)
-            ? "wanderly"
-            : normalized.Equals("travelpro", StringComparison.OrdinalIgnoreCase)
-                ? "travelpro"
-                : normalized.Equals("mytravel", StringComparison.OrdinalIgnoreCase)
-                    ? "mytravel"
-                    : null;
     }
 }

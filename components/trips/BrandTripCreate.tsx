@@ -903,20 +903,74 @@ export default function BrandTripCreate() {
                 <div className="rounded-2xl border border-violet-100 bg-[#faf7ff] p-5">
                   <p className="text-base font-semibold text-[#1f2937]">Adults</p>
                   <div className="mt-4 flex items-center justify-between">
-                    <button type="button" onClick={() => setAdultCount((count) => Math.max(1, count - 1))} className="flex h-10 w-10 items-center justify-center rounded-full border border-violet-200 bg-white text-xl text-violet-700">−</button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAdultCount((count) => {
+                          const nextCount = Math.max(1, count - 1);
+                          setTrip((current) => ({ ...current, travelers: nextCount + childCount }));
+                          return nextCount;
+                        });
+                      }}
+                      className="flex h-10 w-10 items-center justify-center rounded-full border border-violet-200 bg-white text-xl text-violet-700"
+                    >
+                      −
+                    </button>
                     <span className="text-2xl font-bold text-[#1f2937]">{adultCount}</span>
-                    <button type="button" onClick={() => setAdultCount((count) => count + 1)} className="flex h-10 w-10 items-center justify-center rounded-full border border-violet-200 bg-white text-xl text-violet-700">+</button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAdultCount((count) => {
+                          const nextCount = count + 1;
+                          setTrip((current) => ({ ...current, travelers: nextCount + childCount }));
+                          return nextCount;
+                        });
+                      }}
+                      className="flex h-10 w-10 items-center justify-center rounded-full border border-violet-200 bg-white text-xl text-violet-700"
+                    >
+                      +
+                    </button>
                   </div>
                 </div>
                 <div className="rounded-2xl border border-violet-100 bg-[#faf7ff] p-5">
                   <p className="text-base font-semibold text-[#1f2937]">Children</p>
                   <div className="mt-4 flex items-center justify-between">
-                    <button type="button" onClick={() => setChildCount((count) => Math.max(0, count - 1))} className="flex h-10 w-10 items-center justify-center rounded-full border border-violet-200 bg-white text-xl text-violet-700">−</button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setChildCount((count) => {
+                          const nextCount = Math.max(0, count - 1);
+                          setTrip((current) => ({ ...current, travelers: adultCount + nextCount }));
+                          return nextCount;
+                        });
+                      }}
+                      className="flex h-10 w-10 items-center justify-center rounded-full border border-violet-200 bg-white text-xl text-violet-700"
+                    >
+                      −
+                    </button>
                     <span className="text-2xl font-bold text-[#1f2937]">{childCount}</span>
-                    <button type="button" onClick={() => setChildCount((count) => count + 1)} className="flex h-10 w-10 items-center justify-center rounded-full border border-violet-200 bg-white text-xl text-violet-700">+</button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setChildCount((count) => {
+                          const nextCount = count + 1;
+                          setTrip((current) => ({ ...current, travelers: adultCount + nextCount }));
+                          return nextCount;
+                        });
+                      }}
+                      className="flex h-10 w-10 items-center justify-center rounded-full border border-violet-200 bg-white text-xl text-violet-700"
+                    >
+                      +
+                    </button>
                   </div>
                 </div>
               </div>
+
+              <div className="mt-4 flex items-center justify-between rounded-2xl border border-violet-100 bg-[#faf7ff] px-5 py-3">
+                <span className="text-sm text-[#4b5563]">Total travelers</span>
+                <span className="text-lg font-bold text-[#1f2937]">{adultCount + childCount}</span>
+              </div>
+
               <div className="mt-6 flex justify-between gap-3">
                 <button type="button" onClick={() => setActiveStep(1)} className="rounded-full border border-violet-200 px-5 py-3 text-base font-semibold text-violet-700">← Back</button>
                 <button type="button" onClick={() => setActiveStep(3)} className="rounded-full bg-violet-600 px-5 py-3 text-base font-semibold text-white transition hover:bg-violet-700">Continue →</button>

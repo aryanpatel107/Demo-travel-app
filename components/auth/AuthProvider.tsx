@@ -22,10 +22,18 @@ type AuthContextValue = {
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
+
 const getBrandStorageKey = () => {
   const brandKey = config.name.toLowerCase().replace(/\s+/g, "");
   return `travelapp_auth_${brandKey}`;
 };
+
+// Defense-in-depth: never trust a user object whose brand doesn't match
+// the brand currently running. This protects against a shared/misscoped
+// session cookie leaking a login across brand sites.
+function belongsToThisBrand(u: Partial<AuthUser> | null | undefined): u is AuthUser {
+  return !!u?.id && !!u?.email && !!u?.name && !!u?.brand && u.brand === config.name;
+}
 
 function readStoredUser(): AuthUser | null {
   if (typeof window === "undefined") {
@@ -39,12 +47,13 @@ function readStoredUser(): AuthUser | null {
     }
 
     const parsed = JSON.parse(stored) as Partial<AuthUser>;
-    if (!parsed?.id || !parsed?.email || !parsed?.name) {
+
+    if (!belongsToThisBrand(parsed)) {
       window.localStorage.removeItem(getBrandStorageKey());
       return null;
     }
 
-    return parsed as AuthUser;
+    return parsed;
   } catch {
     window.localStorage.removeItem(getBrandStorageKey());
     return null;
@@ -71,13 +80,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const login = useCallback((nextUser: AuthUser) => {
+    // Reject a login payload that doesn't belong to this brand, even
+    // though this should never happen if the backend is correct.
+    if (!belongsToThisBrand(nextUser)) {
+      setUser(null);
+      persistUser(null);
+      setLoading(false);
+      return;
+    }
+
     setUser(nextUser);
     persistUser(nextUser);
+    setLoading(false);
   }, []);
 
   const refreshUser = useCallback(async () => {
     try {
       const response = await apiFetch<AuthUser>("/api/auth/me");
+
+      if (!belongsToThisBrand(response)) {
+        setUser(null);
+        persistUser(null);
+        return null;
+      }
+
       setUser(response);
       persistUser(response);
       return response;
@@ -116,9 +142,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       try {
         const response = await apiFetch<AuthUser>("/api/auth/me");
+
         if (isMounted) {
-          setUser(response);
-          persistUser(response);
+          if (belongsToThisBrand(response)) {
+            setUser(response);
+            persistUser(response);
+          } else {
+            setUser(null);
+            persistUser(null);
+          }
         }
       } catch {
         if (isMounted) {

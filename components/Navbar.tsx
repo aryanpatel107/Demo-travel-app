@@ -68,6 +68,8 @@ export default function Navbar() {
   const sharedLinkClassName = (active: boolean) =>
     `nav-link ${active ? "nav-link-active" : ""}`.trim();
 
+  const showLoggedIn = !loading && !!user;
+
   return (
     <header className={headerClassName}>
       <nav className="brand-navbar__inner" aria-label="Main navigation">
@@ -94,9 +96,9 @@ export default function Navbar() {
           })}
         </div>
 
-        {!loading && user ? (
+        {showLoggedIn ? (
           <div className="flex items-center gap-3">
-            <span className="hidden text-sm font-medium text-slate-700 md:inline">Hi, {user.name.split(" ")[0]}</span>
+            <span className="hidden text-sm font-medium text-slate-700 md:inline">Hi, {user!.name.split(" ")[0]}</span>
             <Link href="/trips" className="nav-link">Profile</Link>
             <Link href="/trips" className="nav-link">My Trips</Link>
             <button
@@ -150,9 +152,9 @@ export default function Navbar() {
                 </Link>
               );
             })}
-            {user ? (
+            {showLoggedIn ? (
               <>
-                <span className="px-2 py-2 text-sm font-medium text-slate-700">Hi, {user.name.split(" ")[0]}</span>
+                <span className="px-2 py-2 text-sm font-medium text-slate-700">Hi, {user!.name.split(" ")[0]}</span>
                 <Link href="/trips" className={sharedLinkClassName(pathname === "/trips")} onClick={() => setMobileOpen(false)}>
                   Profile
                 </Link>

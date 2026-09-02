@@ -40,32 +40,33 @@ public class AppDbContext : DbContext
         });
 
         modelBuilder.Entity<User>(entity =>
-        {
-            entity.Property(u => u.Name)
-                .IsRequired()
-                .HasMaxLength(128);
+{
+    entity.Property(u => u.Name)
+        .IsRequired()
+        .HasMaxLength(128);
 
-            entity.Property(u => u.Email)
-                .IsRequired()
-                .HasMaxLength(256);
+    entity.Property(u => u.Email)
+        .IsRequired()
+        .HasMaxLength(256);
 
-            entity.Property(u => u.PasswordHash)
-                .IsRequired();
+    entity.Property(u => u.PasswordHash)
+        .IsRequired();
 
-            entity.Property(u => u.BrandId)
-                .IsRequired()
-                .HasMaxLength(32);
+    entity.Property(u => u.BrandId)
+        .IsRequired()
+        .HasMaxLength(32);
 
-            entity.HasIndex(u => u.Email)
-                .IsUnique();
+    // Email is now unique PER BRAND, not globally. The same email can
+    // register a separate account on each brand — this is intended for
+    // a multi-brand platform where each brand is a distinct storefront.
+    entity.HasIndex(u => new { u.BrandId, u.Email })
+        .IsUnique();
 
-            entity.HasIndex(u => u.BrandId);
-
-            entity.HasOne(u => u.Brand)
-                .WithMany(b => b.Users)
-                .HasForeignKey(u => u.BrandId)
-                .OnDelete(DeleteBehavior.Restrict);
-        });
+    entity.HasOne(u => u.Brand)
+        .WithMany(b => b.Users)
+        .HasForeignKey(u => u.BrandId)
+        .OnDelete(DeleteBehavior.Restrict);
+});
 
         modelBuilder.Entity<Trip>(entity =>
         {

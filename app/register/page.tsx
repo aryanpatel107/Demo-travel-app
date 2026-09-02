@@ -3,13 +3,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
+import { config } from "@/config";
 import { apiFetch } from "@/lib/apiClient";
-
-const SUPPORTED_BRANDS = [
-  { value: "wanderly", label: "Wanderly" },
-  { value: "travelpro", label: "TravelPro" },
-  { value: "mytravel", label: "MyTravel" },
-];
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -17,9 +12,9 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [brand, setBrand] = useState("wanderly");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -34,12 +29,19 @@ export default function RegisterPage() {
           email,
           password,
           confirmPassword,
-          brand,
+          // Brand is derived from the site you're actually on, not a
+          // user-editable field — you can never accidentally (or
+          // deliberately) register onto a different brand's site.
+          brand: config.name,
         }),
       });
 
-      router.push("/login");
-      router.refresh();
+      setSuccess(true);
+
+      setTimeout(() => {
+        router.push("/login");
+        router.refresh();
+      }, 700);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registration failed.");
     } finally {
@@ -50,7 +52,9 @@ export default function RegisterPage() {
   return (
     <main className="mx-auto flex min-h-[70vh] max-w-lg items-center justify-center px-6 py-16">
       <div className="w-full rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">Create account</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">
+          Create your {config.name} account
+        </p>
         <h1 className="mt-3 text-3xl font-bold text-slate-900">Register</h1>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-5">
@@ -61,6 +65,7 @@ export default function RegisterPage() {
             <input
               id="name"
               type="text"
+              autoComplete="name"
               required
               value={name}
               onChange={(event) => setName(event.target.value)}
@@ -115,36 +120,24 @@ export default function RegisterPage() {
             />
           </div>
 
-          <div>
-            <label htmlFor="brand" className="mb-2 block text-sm font-medium text-slate-700">
-              Brand
-            </label>
-            <select
-              id="brand"
-              value={brand}
-              onChange={(event) => setBrand(event.target.value)}
-              className="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-sky-500 focus:bg-white"
-            >
-              {SUPPORTED_BRANDS.map((brandOption) => (
-                <option key={brandOption.value} value={brandOption.value}>
-                  {brandOption.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
           {error && (
             <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
               {error}
             </div>
           )}
 
+          {success && (
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+              Account created! Redirecting to login…
+            </div>
+          )}
+
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || success}
             className="w-full rounded-full bg-sky-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {loading ? "Creating account..." : "Register"}
+            {loading ? "Creating account..." : success ? "Account created" : "Register"}
           </button>
         </form>
 

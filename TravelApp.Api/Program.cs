@@ -52,10 +52,13 @@ if (!string.IsNullOrWhiteSpace(dataDirectory))
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(connectionString));
 
+// In production, Jwt:Key MUST come from configuration/environment (e.g. an
+// environment variable or a secrets manager) — never rely on this fallback
+// outside local development. Consider throwing if it's missing when
+// builder.Environment.IsProduction() is true.
 var jwtKey = builder.Configuration["Jwt:Key"] ?? "travelapp-development-key-change-me-in-production";
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "travel-app-api";
 var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "travel-app-web";
-var cookieName = builder.Configuration["Jwt:CookieName"] ?? "travelapp_auth";
 var keyBytes = Encoding.UTF8.GetBytes(jwtKey);
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -79,16 +82,40 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             {
                 var brandFromHeader = context.Request.Headers["X-Brand"].FirstOrDefault();
                 var cookieNameForBrand = GetBrandCookieName(brandFromHeader);
-                var token = context.Request.Cookies[cookieNameForBrand];
 
-                if (string.IsNullOrWhiteSpace(token) && !string.Equals(cookieNameForBrand, cookieName, StringComparison.OrdinalIgnoreCase))
-                {
-                    token = context.Request.Cookies[cookieName];
-                }
+                // Only ever read the cookie that matches the requesting
+                // brand's exact cookie name. NO fallback to a generic
+                // "travelapp_auth" cookie — that fallback was the root
+                // cause of the cross-brand login leak: any stale/legacy
+                // cookie from earlier testing would silently authenticate
+                // visitors on the WRONG brand's site.
+                var token = context.Request.Cookies[cookieNameForBrand];
 
                 if (!string.IsNullOrWhiteSpace(token))
                 {
                     context.Token = token;
+                }
+
+                return Task.CompletedTask;
+            },
+
+            // Defense-in-depth: even though OnMessageReceived only ever
+            // loads the brand-specific cookie, explicitly re-verify that
+            // the validated token's own brand_id claim matches the brand
+            // the request claims to be for. This protects against any
+            // future code path (a new login flow, an admin tool, a bug)
+            // that might otherwise let a token from Brand A authenticate
+            // a request on Brand B's site.
+            OnTokenValidated = context =>
+            {
+                var brandFromHeader = context.Request.Headers["X-Brand"].FirstOrDefault();
+                var brandFromToken = context.Principal?.FindFirst("brand_id")?.Value;
+
+                if (string.IsNullOrWhiteSpace(brandFromHeader) ||
+                    string.IsNullOrWhiteSpace(brandFromToken) ||
+                    !string.Equals(brandFromHeader.Trim(), brandFromToken.Trim(), StringComparison.OrdinalIgnoreCase))
+                {
+                    context.Fail("Token brand does not match the requesting site's brand.");
                 }
 
                 return Task.CompletedTask;
@@ -98,11 +125,18 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
+// Update these origins to match every environment you actually deploy to.
+// For local dev with multiple brands running simultaneously on different
+// ports, add each port here. For production, list each brand's real
+// domain — do not use a wildcard together with AllowCredentials.
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+    ?? new[] { "http://localhost:3000", "http://127.0.0.1:3000" };
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowNextJs", policy =>
     {
-        policy.WithOrigins("http://localhost:3000", "http://127.0.0.1:3000")
+        policy.WithOrigins(allowedOrigins)
               .AllowCredentials()
               .AllowAnyHeader()
               .AllowAnyMethod();

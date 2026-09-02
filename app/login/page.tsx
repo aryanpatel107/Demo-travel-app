@@ -4,13 +4,16 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { apiFetch } from "@/lib/apiClient";
+import { useAuth, type AuthUser } from "@/components/auth/AuthProvider";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -18,14 +21,24 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const user = await apiFetch<{ id: string; email: string; name: string; brandId: string; brand: string }>("/api/auth/login", {
+      const user = await apiFetch<AuthUser>("/api/auth/login", {
         method: "POST",
         body: JSON.stringify({ email, password }),
       });
 
       if (user) {
-        router.push("/trips");
-        router.refresh();
+        // Update the auth context immediately so the Navbar and any
+        // route guards see the logged-in state right away, instead of
+        // waiting on AuthProvider's mount-only effect to catch up.
+        login(user);
+        setSuccess(true);
+
+        // Brief pause so the success state is actually visible before
+        // navigating away.
+        setTimeout(() => {
+          router.push("/trips");
+          router.refresh();
+        }, 500);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to sign in.");
@@ -77,12 +90,18 @@ export default function LoginPage() {
             </div>
           )}
 
+          {success && (
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+              Login successful! Redirecting…
+            </div>
+          )}
+
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || success}
             className="w-full rounded-full bg-sky-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {loading ? "Signing in..." : "Login"}
+            {loading ? "Signing in..." : success ? "Signed in" : "Login"}
           </button>
         </form>
 
