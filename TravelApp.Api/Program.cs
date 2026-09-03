@@ -49,8 +49,9 @@ if (!string.IsNullOrWhiteSpace(dataDirectory))
     connectionString = $"Data Source={Path.Combine(dataDirectory, "travelapp.db")}";
 }
 
+// Program.cs
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite(connectionString));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // In production, Jwt:Key MUST come from configuration/environment (e.g. an
 // environment variable or a secrets manager) — never rely on this fallback

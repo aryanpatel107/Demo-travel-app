@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { config } from "@/config";
 import { destinations } from "@/data/destinations";
 import { apiFetch } from "@/lib/apiClient";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
 
 type TripFormState = {
   destinationId: string;
@@ -62,6 +63,14 @@ const BRAND_KEY = config.name.toLowerCase().replace(/\s+/g, "") as BrandKey;
 export default function BrandTripCreate() {
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  // Gate the entire trip-creation flow behind a confirmed login. Without
+  // this, a logged-out visitor could fill out the whole multi-step form
+  // (destination, dates, travelers, experiences) only to hit a raw
+  // "Request failed with status 401" on the very last step — wasted
+  // effort and an unprofessional error. This applies to all three
+  // brand layouts below since they share this one component.
+  const isAuthReady = useRequireAuth();
 
   const preselectedDestinationId = searchParams.get("destinationId") ?? "";
 
@@ -274,6 +283,14 @@ export default function BrandTripCreate() {
       </div>
     </div>
   );
+
+  // Covers both "still checking auth" and "confirmed logged out, about to
+  // redirect". Render nothing rather than any part of the form — a
+  // logged-out visitor should never see the destination picker, dates,
+  // or traveler counts before being sent to /login.
+  if (!isAuthReady) {
+    return null;
+  }
 
   if (tripStage === "processing") {
     return (

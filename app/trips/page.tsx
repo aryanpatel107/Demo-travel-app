@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { BrandEmptyState, BrandErrorState } from "@/components/brand/BrandState";
-import { useAuth } from "@/components/auth/AuthProvider";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { ApiError, apiFetch } from "@/lib/apiClient";
 
 interface TripView {
@@ -16,20 +16,28 @@ interface TripView {
   paymentStatus: string;
 }
 
+/**
+ * /trips — the signed-in user's trip list.
+ *
+ * Access is gated by useRequireAuth(): while auth status is still being
+ * resolved, or once it resolves to "not logged in", this page renders
+ * nothing and is silently redirected to /login — no error is shown for
+ * that case, since it isn't actually an error.
+ *
+ * A visible error card is reserved for a genuine failure that happens
+ * AFTER access was already confirmed (e.g. the session token expired
+ * mid-use, or the trips service is unreachable).
+ */
 export default function TripsPage() {
   const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
+  const isAuthReady = useRequireAuth();
+
   const [trips, setTrips] = useState<TripView[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (authLoading) {
-      return;
-    }
-
-    if (!user) {
-      router.replace("/login");
+    if (!isAuthReady) {
       return;
     }
 
@@ -62,6 +70,11 @@ export default function TripsPage() {
       } catch (loadError) {
         if (loadError instanceof ApiError) {
           if (loadError.status === 401) {
+            // Access was confirmed by useRequireAuth() before this call
+            // was ever made, so a 401 here means the session genuinely
+            // expired between the guard check and this request — a real,
+            // user-facing condition worth explaining, not silent-redirect
+            // noise.
             setError("Your session has expired. Please log in again.");
             router.replace("/login");
             return;
@@ -88,9 +101,17 @@ export default function TripsPage() {
     }
 
     void loadTrips();
-  }, [authLoading, user, router]);
+  }, [isAuthReady, router]);
 
-  if (authLoading || loading) {
+  // Covers both "still checking auth" and "confirmed logged out, about
+  // to redirect" — render nothing rather than a loading card, since a
+  // logged-out visitor should see a clean, near-instant redirect with no
+  // intermediate flash of page content.
+  if (!isAuthReady) {
+    return null;
+  }
+
+  if (loading) {
     return (
       <section className="mx-auto max-w-4xl px-4 py-12 sm:px-6 sm:py-16">
         <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-600">

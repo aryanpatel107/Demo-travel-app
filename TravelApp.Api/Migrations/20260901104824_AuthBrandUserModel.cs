@@ -16,24 +16,24 @@ namespace TravelApp.Api.Migrations
             migrationBuilder.AlterColumn<string>(
                 name: "UserId",
                 table: "Trips",
-                type: "TEXT",
+                type: "text",
                 maxLength: 128,
                 nullable: false,
                 defaultValue: "",
                 oldClrType: typeof(string),
-                oldType: "TEXT",
+                oldType: "text",
                 oldMaxLength: 128,
                 oldNullable: true);
 
             migrationBuilder.AlterColumn<string>(
                 name: "UserId",
                 table: "Payments",
-                type: "TEXT",
+                type: "text",
                 maxLength: 128,
                 nullable: false,
                 defaultValue: "",
                 oldClrType: typeof(string),
-                oldType: "TEXT",
+                oldType: "text",
                 oldMaxLength: 128,
                 oldNullable: true);
 
@@ -41,11 +41,28 @@ namespace TravelApp.Api.Migrations
                 name: "Brands",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "TEXT", maxLength: 32, nullable: false),
-                    Name = table.Column<string>(type: "TEXT", maxLength: 128, nullable: false),
-                    Slug = table.Column<string>(type: "TEXT", maxLength: 32, nullable: false),
-                    IsActive = table.Column<bool>(type: "INTEGER", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    Id = table.Column<string>(
+                        type: "text",
+                        maxLength: 32,
+                        nullable: false),
+
+                    Name = table.Column<string>(
+                        type: "text",
+                        maxLength: 128,
+                        nullable: false),
+
+                    Slug = table.Column<string>(
+                        type: "text",
+                        maxLength: 32,
+                        nullable: false),
+
+                    IsActive = table.Column<bool>(
+                        type: "boolean",
+                        nullable: false),
+
+                    CreatedAt = table.Column<DateTime>(
+                        type: "timestamp with time zone",
+                        nullable: false)
                 },
                 constraints: table =>
                 {
@@ -56,18 +73,45 @@ namespace TravelApp.Api.Migrations
                 name: "Users",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "TEXT", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", maxLength: 128, nullable: false),
-                    Email = table.Column<string>(type: "TEXT", maxLength: 256, nullable: false),
-                    PasswordHash = table.Column<string>(type: "TEXT", nullable: false),
-                    BrandId = table.Column<string>(type: "TEXT", maxLength: 32, nullable: false),
-                    IsActive = table.Column<bool>(type: "INTEGER", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    Id = table.Column<string>(
+                        type: "text",
+                        nullable: false),
+
+                    Name = table.Column<string>(
+                        type: "text",
+                        maxLength: 128,
+                        nullable: false),
+
+                    Email = table.Column<string>(
+                        type: "text",
+                        maxLength: 256,
+                        nullable: false),
+
+                    PasswordHash = table.Column<string>(
+                        type: "text",
+                        nullable: false),
+
+                    BrandId = table.Column<string>(
+                        type: "text",
+                        maxLength: 32,
+                        nullable: false),
+
+                    IsActive = table.Column<bool>(
+                        type: "boolean",
+                        nullable: false),
+
+                    CreatedAt = table.Column<DateTime>(
+                        type: "timestamp with time zone",
+                        nullable: false),
+
+                    UpdatedAt = table.Column<DateTime>(
+                        type: "timestamp with time zone",
+                        nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Users", x => x.Id);
+
                     table.ForeignKey(
                         name: "FK_Users_Brands_BrandId",
                         column: x => x.BrandId,
@@ -76,15 +120,14 @@ namespace TravelApp.Api.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
-            migrationBuilder.InsertData(
-                table: "Brands",
-                columns: new[] { "Id", "CreatedAt", "IsActive", "Name", "Slug" },
-                values: new object[,]
-                {
-                    { "mytravel", new DateTime(2026, 9, 1, 10, 48, 23, 433, DateTimeKind.Utc).AddTicks(7456), true, "MyTravel", "mytravel" },
-                    { "travelpro", new DateTime(2026, 9, 1, 10, 48, 23, 433, DateTimeKind.Utc).AddTicks(7450), true, "TravelPro", "travelpro" },
-                    { "wanderly", new DateTime(2026, 9, 1, 10, 48, 23, 433, DateTimeKind.Utc).AddTicks(5572), true, "Wanderly", "wanderly" }
-                });
+            migrationBuilder.Sql(
+                """
+                INSERT INTO "Brands" ("Id", "CreatedAt", "IsActive", "Name", "Slug")
+                VALUES
+                    ('mytravel', '2026-09-01T10:48:23.4337456Z', TRUE, 'MyTravel', 'mytravel'),
+                    ('travelpro', '2026-09-01T10:48:23.4337450Z', TRUE, 'TravelPro', 'travelpro'),
+                    ('wanderly', '2026-09-01T10:48:23.4335572Z', TRUE, 'Wanderly', 'wanderly');
+                """);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Payments_UserId",
@@ -158,7 +201,7 @@ namespace TravelApp.Api.Migrations
 
             migrationBuilder.DropForeignKey(
                 name: "FK_Trips_Users_UserId",
-                table: "Trips");
+                table: "Users");
 
             migrationBuilder.DropTable(
                 name: "Users");
@@ -173,21 +216,21 @@ namespace TravelApp.Api.Migrations
             migrationBuilder.AlterColumn<string>(
                 name: "UserId",
                 table: "Trips",
-                type: "TEXT",
+                type: "text",
                 maxLength: 128,
                 nullable: true,
                 oldClrType: typeof(string),
-                oldType: "TEXT",
+                oldType: "text",
                 oldMaxLength: 128);
 
             migrationBuilder.AlterColumn<string>(
                 name: "UserId",
                 table: "Payments",
-                type: "TEXT",
+                type: "text",
                 maxLength: 128,
                 nullable: true,
                 oldClrType: typeof(string),
-                oldType: "TEXT",
+                oldType: "text",
                 oldMaxLength: 128);
         }
     }

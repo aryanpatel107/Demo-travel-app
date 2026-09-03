@@ -1,3 +1,4 @@
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -26,12 +27,14 @@ public class TripsController : ControllerBase
     public async Task<ActionResult<IEnumerable<TripResponseDto>>> GetAll()
     {
         var brandId = _brandContext.CurrentBrandId;
+
         if (string.IsNullOrWhiteSpace(brandId))
         {
             return BadRequest(new { error = "A valid brand is required." });
         }
 
         var userId = _brandContext.CurrentUserId;
+
         if (string.IsNullOrWhiteSpace(userId))
         {
             return Unauthorized(new { error = "You are not authenticated." });
@@ -50,12 +53,14 @@ public class TripsController : ControllerBase
     public async Task<ActionResult<TripResponseDto>> GetById(string id)
     {
         var brandId = _brandContext.CurrentBrandId;
+
         if (string.IsNullOrWhiteSpace(brandId))
         {
             return BadRequest(new { error = "A valid brand is required." });
         }
 
         var userId = _brandContext.CurrentUserId;
+
         if (string.IsNullOrWhiteSpace(userId))
         {
             return Unauthorized(new { error = "You are not authenticated." });
@@ -63,7 +68,10 @@ public class TripsController : ControllerBase
 
         var trip = await _db.Trips
             .Include(t => t.Payment)
-            .FirstOrDefaultAsync(t => t.Id == id && t.BrandId == brandId && t.UserId == userId);
+            .FirstOrDefaultAsync(t =>
+                t.Id == id &&
+                t.BrandId == brandId &&
+                t.UserId == userId);
 
         if (trip is null)
         {
@@ -77,79 +85,158 @@ public class TripsController : ControllerBase
     public async Task<ActionResult<TripResponseDto>> Create(CreateTripDto dto)
     {
         var brandId = _brandContext.CurrentBrandId;
+
         if (string.IsNullOrWhiteSpace(brandId))
         {
             return BadRequest(new { error = "A valid brand is required." });
         }
 
-        if (string.IsNullOrWhiteSpace(dto.DestinationId) || string.IsNullOrWhiteSpace(dto.DestinationName))
-            return BadRequest(new { error = "destinationId and destinationName are required" });
+        if (string.IsNullOrWhiteSpace(dto.DestinationId) ||
+            string.IsNullOrWhiteSpace(dto.DestinationName))
+        {
+            return BadRequest(new
+            {
+                error = "destinationId and destinationName are required"
+            });
+        }
 
         if (dto.StartDate == default || dto.EndDate == default)
-            return BadRequest(new { error = "Start date and end date are required." });
+        {
+            return BadRequest(new
+            {
+                error = "Start date and end date are required."
+            });
+        }
 
         if (dto.StartDate > dto.EndDate)
-            return BadRequest(new { error = "The end date must be after the start date." });
+        {
+            return BadRequest(new
+            {
+                error = "The end date must be after the start date."
+            });
+        }
 
         if (dto.Travelers < 1)
-            return BadRequest(new { error = "Travelers must be at least 1." });
+        {
+            return BadRequest(new
+            {
+                error = "Travelers must be at least 1."
+            });
+        }
 
         var userId = _brandContext.CurrentUserId;
+
         if (string.IsNullOrWhiteSpace(userId))
         {
-            return Unauthorized(new { error = "You are not authenticated." });
+            return Unauthorized(new
+            {
+                error = "You are not authenticated."
+            });
         }
+
+        // ============================================================
+        // IMPORTANT:
+        // PostgreSQL "timestamp with time zone" requires UTC DateTime.
+        //
+        // Dates coming from the browser can arrive with
+        // DateTimeKind.Unspecified.
+        //
+        // We explicitly mark the trip dates as UTC before saving.
+        // ============================================================
+
+        var startDateUtc = DateTime.SpecifyKind(
+            dto.StartDate,
+            DateTimeKind.Utc
+        );
+
+        var endDateUtc = DateTime.SpecifyKind(
+            dto.EndDate,
+            DateTimeKind.Utc
+        );
+
+        var nowUtc = DateTime.UtcNow;
 
         var trip = new Trip
         {
             BrandId = brandId,
             UserId = userId,
+
             DestinationId = dto.DestinationId,
             DestinationName = dto.DestinationName,
-            StartDate = dto.StartDate,
-            EndDate = dto.EndDate,
+
+            StartDate = startDateUtc,
+            EndDate = endDateUtc,
+
             Travelers = dto.Travelers,
             Notes = dto.Notes,
+
             Status = "pending",
-            UpdatedAt = DateTime.UtcNow,
+
+            // Always UTC for PostgreSQL timestamp with time zone
+            CreatedAt = nowUtc,
+            UpdatedAt = nowUtc
         };
 
         _db.Trips.Add(trip);
+
         await _db.SaveChangesAsync();
 
         var createdTrip = await _db.Trips
             .Include(t => t.Payment)
             .FirstOrDefaultAsync(t => t.Id == trip.Id);
 
-        return CreatedAtAction(nameof(GetById), new { id = trip.Id }, ToDto(createdTrip!));
+        return CreatedAtAction(
+            nameof(GetById),
+            new { id = trip.Id },
+            ToDto(createdTrip!)
+        );
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(string id)
     {
         var brandId = _brandContext.CurrentBrandId;
+
         if (string.IsNullOrWhiteSpace(brandId))
         {
-            return BadRequest(new { error = "A valid brand is required." });
+            return BadRequest(new
+            {
+                error = "A valid brand is required."
+            });
         }
 
         var userId = _brandContext.CurrentUserId;
+
         if (string.IsNullOrWhiteSpace(userId))
         {
-            return Unauthorized(new { error = "You are not authenticated." });
+            return Unauthorized(new
+            {
+                error = "You are not authenticated."
+            });
         }
 
         var trip = await _db.Trips
-            .FirstOrDefaultAsync(t => t.Id == id && t.BrandId == brandId && t.UserId == userId);
+            .FirstOrDefaultAsync(t =>
+                t.Id == id &&
+                t.BrandId == brandId &&
+                t.UserId == userId);
 
         if (trip is null)
         {
-            return NotFound(new { error = "Trip not found" });
+            return NotFound(new
+            {
+                error = "Trip not found"
+            });
         }
 
         _db.Trips.Remove(trip);
+
         await _db.SaveChangesAsync();
-        return Ok(new { success = true });
+
+        return Ok(new
+        {
+            success = true
+        });
     }
 
     private static TripResponseDto ToDto(Trip trip) => new(
@@ -165,3 +252,4 @@ public class TripsController : ControllerBase
         trip.Payment?.Status ?? "pending"
     );
 }
+
