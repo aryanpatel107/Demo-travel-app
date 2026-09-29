@@ -1,4 +1,6 @@
+import React from "react";
 import { View, Text, StyleSheet } from "react-native";
+import { theme } from "@/constants/theme";
 
 const stats = [
   { value: "120+", label: "Destinations" },
@@ -9,17 +11,12 @@ const stats = [
 
 export default function Stats() {
   return (
-    <View style={styles.section}>
-      <View style={styles.container}>
+    <View style={styles.container}>
+      <View style={styles.grid}>
         {stats.map((stat) => (
-          <View key={stat.label} style={styles.stat}>
-            <Text style={styles.value}>
-              {stat.value}
-            </Text>
-
-            <Text style={styles.label}>
-              {stat.label}
-            </Text>
+          <View key={stat.label} style={styles.statBox}>
+            <Text style={styles.value}>{stat.value}</Text>
+            <Text style={styles.label}>{stat.label}</Text>
           </View>
         ))}
       </View>
@@ -28,44 +25,35 @@ export default function Stats() {
 }
 
 const styles = StyleSheet.create({
-  section: {
-    width: "100%",
-    backgroundColor: "#FFFFFF",
+  container: {
+    backgroundColor: "#ffffff",
     borderTopWidth: 1,
     borderBottomWidth: 1,
-    borderColor: "#E5E7EB",
+    borderColor: "#e2e8f0",
+    paddingVertical: 24,
+    paddingHorizontal: 16,
   },
-
-  container: {
-    width: "100%",
-    paddingHorizontal: 24,
-    paddingVertical: 48,
-
+  grid: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
-    rowGap: 32,
+    rowGap: 16,
   },
-
-  stat: {
+  statBox: {
     width: "48%",
     alignItems: "center",
   },
-
   value: {
-    fontSize: 30,
-    lineHeight: 38,
-    fontWeight: "600",
-    color: "#0F766E",
+    fontSize: 28,
+    fontWeight: "800",
+    color: theme.colors.teal,
+    marginBottom: 4,
   },
-
   label: {
-    marginTop: 4,
-    fontSize: 12,
+    fontSize: 10,
+    fontWeight: "700",
+    letterSpacing: 1.5,
+    color: "#64748b",
     textTransform: "uppercase",
-    letterSpacing: 2,
-    color: "rgba(31, 41, 55, 0.5)",
-    fontFamily: "monospace",
-    textAlign: "center",
   },
 });

@@ -28,16 +28,68 @@ namespace TravelApp.Api.Migrations
                         .HasMaxLength(32)
                         .HasColumnType("character varying(32)");
 
+                    b.Property<string>("ContactEmail")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ContactPhone")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("CurrencyCode")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("CurrencyName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int?>("ExternalWebsiteId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("FontFamily")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("FooterCopyright")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Hostname")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
+
+                    b.Property<string>("LanguageCode")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("LanguageName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("LogoUrl")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)");
+
+                    b.Property<string>("PrimaryColor")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("SecondaryColor")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("Slug")
                         .IsRequired()
@@ -45,6 +97,12 @@ namespace TravelApp.Api.Migrations
                         .HasColumnType("character varying(32)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ExternalWebsiteId")
+                        .IsUnique();
+
+                    b.HasIndex("Hostname")
+                        .IsUnique();
 
                     b.HasIndex("Slug")
                         .IsUnique();
@@ -55,26 +113,83 @@ namespace TravelApp.Api.Migrations
                         new
                         {
                             Id = "wanderly",
+                            ContactEmail = "hello@wanderly.com",
+                            ContactPhone = "+1 555 010 0001",
                             CreatedAt = new DateTime(2026, 9, 1, 10, 48, 23, 433, DateTimeKind.Utc).AddTicks(5572),
+                            CurrencyCode = "USD",
+                            CurrencyName = "US Dollar",
+                            FontFamily = "Fraunces",
+                            FooterCopyright = "© 2026 Wanderly. All Rights Reserved",
+                            Hostname = "www.gujjutours.com",
                             IsActive = true,
+                            LanguageCode = "en",
+                            LanguageName = "English",
+                            LogoUrl = "/logos/wanderly.svg",
                             Name = "Wanderly",
+                            PrimaryColor = "#d96a3a",
+                            SecondaryColor = "#17221d",
                             Slug = "wanderly"
                         },
                         new
                         {
                             Id = "travelpro",
+                            ContactEmail = "support@travelpro.com",
+                            ContactPhone = "+1 555 010 0002",
                             CreatedAt = new DateTime(2026, 9, 1, 10, 48, 23, 433, DateTimeKind.Utc).AddTicks(7450),
+                            CurrencyCode = "USD",
+                            CurrencyName = "US Dollar",
+                            FontFamily = "Inter",
+                            FooterCopyright = "© 2026 TravelPro. All Rights Reserved",
+                            Hostname = "www.tripgoasia.com",
                             IsActive = true,
+                            LanguageCode = "en",
+                            LanguageName = "English",
+                            LogoUrl = "/logos/travelpro.svg",
                             Name = "TravelPro",
+                            PrimaryColor = "#0369a1",
+                            SecondaryColor = "#0f172a",
                             Slug = "travelpro"
                         },
                         new
                         {
                             Id = "mytravel",
+                            ContactEmail = "hello@mytravel.com",
+                            ContactPhone = "+1 555 010 0003",
                             CreatedAt = new DateTime(2026, 9, 1, 10, 48, 23, 433, DateTimeKind.Utc).AddTicks(7456),
+                            CurrencyCode = "USD",
+                            CurrencyName = "US Dollar",
+                            FontFamily = "Inter",
+                            FooterCopyright = "© 2026 MyTravel. All Rights Reserved",
+                            Hostname = "mytravel.yourdomain.com",
                             IsActive = true,
+                            LanguageCode = "en",
+                            LanguageName = "English",
+                            LogoUrl = "/logos/mytravel.svg",
                             Name = "MyTravel",
+                            PrimaryColor = "#7c3aed",
+                            SecondaryColor = "#1f2937",
                             Slug = "mytravel"
+                        },
+                        new
+                        {
+                            Id = "techno-b2b",
+                            ContactEmail = "",
+                            ContactPhone = "",
+                            CreatedAt = new DateTime(2026, 9, 15, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CurrencyCode = "USD",
+                            CurrencyName = "American Dollar",
+                            ExternalWebsiteId = 2,
+                            FontFamily = "GT Eesti Pro Display",
+                            FooterCopyright = "Copyright 2026.\nAll Rights Reserved.",
+                            Hostname = "stagingb2b.technoheaven.com",
+                            IsActive = true,
+                            LanguageCode = "en",
+                            LanguageName = "English",
+                            LogoUrl = "",
+                            Name = "Techno B2B",
+                            PrimaryColor = "#00aacf",
+                            SecondaryColor = "#00aacf",
+                            Slug = "techno-b2b"
                         });
                 });
 
@@ -158,6 +273,54 @@ namespace TravelApp.Api.Migrations
                     b.ToTable("Payments");
                 });
 
+            modelBuilder.Entity("TravelApp.Api.Models.Review", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<string>("BrandId")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("Comment")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DestinationId")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("BrandId", "DestinationId");
+
+                    b.HasIndex("BrandId", "DestinationId", "UserId")
+                        .IsUnique();
+
+                    b.ToTable("Reviews");
+                });
+
             modelBuilder.Entity("TravelApp.Api.Models.Trip", b =>
                 {
                     b.Property<string>("Id")
@@ -167,6 +330,9 @@ namespace TravelApp.Api.Migrations
                         .IsRequired()
                         .HasMaxLength(32)
                         .HasColumnType("character varying(32)");
+
+                    b.Property<DateTime?>("CancelledAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -214,6 +380,54 @@ namespace TravelApp.Api.Migrations
                     b.HasIndex("BrandId", "UserId");
 
                     b.ToTable("Trips");
+                });
+
+            modelBuilder.Entity("TravelApp.Api.Models.TripItem", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Details")
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)");
+
+                    b.Property<bool>("IsCancelled")
+                        .HasColumnType("boolean");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("TripId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TripId");
+
+                    b.ToTable("TripItems");
                 });
 
             modelBuilder.Entity("TravelApp.Api.Models.User", b =>
@@ -284,6 +498,25 @@ namespace TravelApp.Api.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("TravelApp.Api.Models.Review", b =>
+                {
+                    b.HasOne("TravelApp.Api.Models.Brand", "Brand")
+                        .WithMany()
+                        .HasForeignKey("BrandId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TravelApp.Api.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Brand");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("TravelApp.Api.Models.Trip", b =>
                 {
                     b.HasOne("TravelApp.Api.Models.Brand", "Brand")
@@ -301,6 +534,17 @@ namespace TravelApp.Api.Migrations
                     b.Navigation("Brand");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("TravelApp.Api.Models.TripItem", b =>
+                {
+                    b.HasOne("TravelApp.Api.Models.Trip", "Trip")
+                        .WithMany("Items")
+                        .HasForeignKey("TripId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Trip");
                 });
 
             modelBuilder.Entity("TravelApp.Api.Models.User", b =>
@@ -323,6 +567,8 @@ namespace TravelApp.Api.Migrations
 
             modelBuilder.Entity("TravelApp.Api.Models.Trip", b =>
                 {
+                    b.Navigation("Items");
+
                     b.Navigation("Payment");
                 });
 

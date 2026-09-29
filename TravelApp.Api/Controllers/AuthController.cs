@@ -17,21 +17,35 @@ public class AuthController : ControllerBase
     private readonly JwtTokenService _jwtTokenService;
     private readonly IConfiguration _configuration;
 
-    public AuthController(AppDbContext db, JwtTokenService jwtTokenService, IConfiguration configuration)
+    public AuthController(
+        AppDbContext db,
+        JwtTokenService jwtTokenService,
+        IConfiguration configuration)
     {
         _db = db;
         _jwtTokenService = jwtTokenService;
         _configuration = configuration;
     }
 
+    // ============================================================
+    // LOCAL REQUEST CHECK
+    // ============================================================
+
     private bool IsLocalRequest()
     {
-        var host = HttpContext.Request.Host.Host ?? string.Empty;
-        return host.Equals("localhost", StringComparison.OrdinalIgnoreCase)
-            || host.StartsWith("127.0.0.1", StringComparison.OrdinalIgnoreCase)
-            || host.StartsWith("0.0.0.0", StringComparison.OrdinalIgnoreCase)
-            || host.StartsWith("[::1]", StringComparison.OrdinalIgnoreCase);
+        return HttpContext.Request.Host.Host.Equals(
+            "localhost",
+            StringComparison.OrdinalIgnoreCase
+        )
+        || HttpContext.Request.Host.Host.Equals(
+            "127.0.0.1",
+            StringComparison.OrdinalIgnoreCase
+        );
     }
+
+    // ============================================================
+    // COOKIE NAME
+    // ============================================================
 
     private static string GetBrandCookieName(string? brandId)
     {
@@ -39,177 +53,605 @@ public class AuthController : ControllerBase
             ? ""
             : brandId.Trim();
 
-        if (normalized.Equals("wanderly", StringComparison.OrdinalIgnoreCase))
+        if (normalized.Equals(
+                "wanderly",
+                StringComparison.OrdinalIgnoreCase))
         {
             return "travelapp_auth_wanderly";
         }
 
-        if (normalized.Equals("travelpro", StringComparison.OrdinalIgnoreCase))
+        if (normalized.Equals(
+                "travelpro",
+                StringComparison.OrdinalIgnoreCase))
         {
             return "travelapp_auth_travelpro";
         }
 
-        if (normalized.Equals("mytravel", StringComparison.OrdinalIgnoreCase))
+        if (normalized.Equals(
+                "mytravel",
+                StringComparison.OrdinalIgnoreCase))
         {
             return "travelapp_auth_mytravel";
+        }
+
+        if (normalized.Equals(
+                "techno-b2b",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return "travelapp_auth_techno_b2b";
         }
 
         return "travelapp_auth";
     }
 
-    // Used by Login/Logout to determine which brand's site made the
-    // request. This is the SAME source of truth (X-Brand header) your
-    // frontend already sends on every apiFetch call — nothing new needed
-    // on the frontend for login/logout.
-    private static string? ResolveBrand(string? rawBrandId, string? rawBrand)
+    // ============================================================
+    // LEGACY LOCAL BRAND RESOLUTION
+    // ============================================================
+
+    private static string? ResolveLegacyBrand(
+        string? rawBrandId,
+        string? rawBrand)
     {
-        var candidate = string.IsNullOrWhiteSpace(rawBrandId) ? rawBrand : rawBrandId;
-        if (string.IsNullOrWhiteSpace(candidate)) return null;
+        var candidate = string.IsNullOrWhiteSpace(rawBrandId)
+            ? rawBrand
+            : rawBrandId;
+
+        if (string.IsNullOrWhiteSpace(candidate))
+        {
+            return null;
+        }
 
         var normalized = candidate.Trim();
-        return normalized.Equals("wanderly", StringComparison.OrdinalIgnoreCase)
-            ? "wanderly"
-            : normalized.Equals("travelpro", StringComparison.OrdinalIgnoreCase)
-                ? "travelpro"
-                : normalized.Equals("mytravel", StringComparison.OrdinalIgnoreCase)
-                    ? "mytravel"
-                    : null;
+
+        if (normalized.Equals(
+                "wanderly",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return "wanderly";
+        }
+
+        if (normalized.Equals(
+                "travelpro",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return "travelpro";
+        }
+
+        if (normalized.Equals(
+                "mytravel",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return "mytravel";
+        }
+
+        if (normalized.Equals(
+                "techno-b2b",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return "techno-b2b";
+        }
+
+        return null;
     }
 
-    [HttpPost("register")]
-    public async Task<ActionResult<AuthUserDto>> Register([FromBody] RegisterRequestDto dto)
+    // ============================================================
+    // DYNAMIC BRAND RESOLUTION
+    //
+    // X-Brand can contain either:
+    //
+    //   wanderly
+    //   travelpro
+    //   mytravel
+    //   techno-b2b
+    //
+    // OR a remote Technoheaven website ID:
+    //
+    //   2
+    //
+    // The numeric value is resolved through the database using
+    // Brand.ExternalWebsiteId.
+    // ============================================================
+
+    private async Task<Brand?> ResolveBrandAsync()
     {
-        if (string.IsNullOrWhiteSpace(dto.Name)) return BadRequest(new { error = "Name is required." });
-        if (string.IsNullOrWhiteSpace(dto.Email)) return BadRequest(new { error = "Email is required." });
-        if (string.IsNullOrWhiteSpace(dto.Password)) return BadRequest(new { error = "Password is required." });
-        if (dto.Password.Length < 8) return BadRequest(new { error = "Password must be at least 8 characters long." });
-        if (dto.ConfirmPassword is not null && dto.Password != dto.ConfirmPassword) return BadRequest(new { error = "Passwords do not match." });
+        var rawBrandHeader =
+            Request.Headers["X-Brand"].FirstOrDefault();
+
+        if (string.IsNullOrWhiteSpace(rawBrandHeader))
+        {
+            return null;
+        }
+
+        var normalized = rawBrandHeader.Trim();
+
+        // --------------------------------------------------------
+        // 1. Existing local brand ID
+        // --------------------------------------------------------
+
+        var legacyBrand =
+            ResolveLegacyBrand(normalized, null);
+
+        if (legacyBrand is not null)
+        {
+            return await _db.Brands
+                .FirstOrDefaultAsync(b =>
+                    b.Id == legacyBrand &&
+                    b.IsActive);
+        }
+
+        // --------------------------------------------------------
+        // 2. Dynamic external website ID
+        //
+        // Example:
+        //
+        // X-Brand: 2
+        //
+        // Database:
+        //
+        // ExternalWebsiteId = 2
+        // Id = techno-b2b
+        // --------------------------------------------------------
+
+        if (int.TryParse(
+                normalized,
+                out var externalWebsiteId))
+        {
+            return await _db.Brands
+                .FirstOrDefaultAsync(b =>
+                    b.ExternalWebsiteId == externalWebsiteId &&
+                    b.IsActive);
+        }
+
+        return null;
+    }
+
+    // ============================================================
+    // COOKIE OPTIONS
+    // ============================================================
+
+    private CookieOptions CreateAuthCookieOptions(
+        int cookieMinutes)
+    {
+        return new CookieOptions
+        {
+            HttpOnly = true,
+
+            Secure = !IsLocalRequest(),
+
+            SameSite = SameSiteMode.Lax,
+
+            Expires = DateTimeOffset.UtcNow
+                .AddMinutes(cookieMinutes),
+
+            Path = "/"
+        };
+    }
+
+    // ============================================================
+    // REGISTER
+    // ============================================================
+
+    [HttpPost("register")]
+    public async Task<ActionResult<AuthUserDto>> Register(
+        [FromBody] RegisterRequestDto dto)
+    {
+        // --------------------------------------------------------
+        // Validate name
+        // --------------------------------------------------------
+
+        if (string.IsNullOrWhiteSpace(dto.Name))
+        {
+            return BadRequest(new
+            {
+                error = "Name is required."
+            });
+        }
+
+        // --------------------------------------------------------
+        // Validate email
+        // --------------------------------------------------------
+
+        if (string.IsNullOrWhiteSpace(dto.Email))
+        {
+            return BadRequest(new
+            {
+                error = "Email is required."
+            });
+        }
+
+        // --------------------------------------------------------
+        // Validate password
+        // --------------------------------------------------------
+
+        if (string.IsNullOrWhiteSpace(dto.Password))
+        {
+            return BadRequest(new
+            {
+                error = "Password is required."
+            });
+        }
+
+        // --------------------------------------------------------
+        // Validate password confirmation
+        // --------------------------------------------------------
+
+        if (!string.IsNullOrWhiteSpace(dto.ConfirmPassword) &&
+            dto.Password != dto.ConfirmPassword)
+        {
+            return BadRequest(new
+            {
+                error = "Passwords do not match."
+            });
+        }
+
+        // --------------------------------------------------------
+        // Resolve brand from X-Brand
+        //
+        // IMPORTANT:
+        // The authenticated website/remote configuration decides
+        // the brand.
+        // --------------------------------------------------------
+
+        var brand = await ResolveBrandAsync();
+
+        if (brand is null)
+        {
+            return BadRequest(new
+            {
+                error =
+                    "A valid brand is required. " +
+                    "The X-Brand header must contain a valid local brand " +
+                    "or external website ID."
+            });
+        }
+
+        // --------------------------------------------------------
+        // Normalize email
+        // --------------------------------------------------------
 
         var normalizedEmail = dto.Email.Trim();
-        if (!normalizedEmail.Contains('@')) return BadRequest(new { error = "A valid email is required." });
 
-        // Prefer the actual requesting site's brand (X-Brand header) over
-        // any brand value the client body might send — the client should
-        // never be able to register itself onto a brand other than the
-        // site it's actually on.
-        var brandFromHeader = Request.Headers["X-Brand"].FirstOrDefault();
-        var resolvedBrandId = ResolveBrand(brandFromHeader, null) ?? ResolveBrand(dto.BrandId, dto.Brand);
-        if (resolvedBrandId is null) return BadRequest(new { error = "A valid brand is required: Wanderly, TravelPro, or MyTravel." });
+        // --------------------------------------------------------
+        // Check existing account
+        //
+        // Same email can exist on different brands.
+        // Same email cannot exist twice on one brand.
+        // --------------------------------------------------------
 
-        var brand = await _db.Brands.FirstOrDefaultAsync(b => b.Id == resolvedBrandId);
-        if (brand is null) return BadRequest(new { error = "Selected brand is not supported." });
-
-        // Scoped by BOTH brand and email — the same email can now hold a
-        // separate account per brand, matching the composite unique index.
         var existingUser = await _db.Users
-            .FirstOrDefaultAsync(u => u.Email == normalizedEmail && u.BrandId == resolvedBrandId);
-        if (existingUser is not null) return Conflict(new { error = "An account with that email already exists for this site." });
+            .FirstOrDefaultAsync(u =>
+                u.Email == normalizedEmail &&
+                u.BrandId == brand.Id);
+
+        if (existingUser is not null)
+        {
+            return Conflict(new
+            {
+                error =
+                    "An account with this email already exists " +
+                    "for this brand."
+            });
+        }
+
+        // --------------------------------------------------------
+        // Create user
+        // --------------------------------------------------------
 
         var user = new User
         {
+            Id = Guid.NewGuid().ToString(),
+
             Name = dto.Name.Trim(),
+
             Email = normalizedEmail,
+
+            PasswordHash =
+                BCrypt.Net.BCrypt.HashPassword(dto.Password),
+
+            // IMPORTANT:
+            // Always use the resolved database brand.
             BrandId = brand.Id,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
+
             IsActive = true,
+
             CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow,
+
+            UpdatedAt = DateTime.UtcNow
         };
 
         _db.Users.Add(user);
+
         await _db.SaveChangesAsync();
 
-        var safeUser = new AuthUserDto(user.Id, user.Name, user.Email, user.BrandId, brand.Name, user.IsActive);
+        // --------------------------------------------------------
+        // Create JWT
+        // --------------------------------------------------------
 
-        return Ok(safeUser);
+        var token = _jwtTokenService.CreateToken(
+            user.Id,
+            user.Email,
+            user.BrandId,
+            brand.Name
+        );
+
+        // --------------------------------------------------------
+        // Brand-specific cookie
+        // --------------------------------------------------------
+
+        var cookieName =
+            GetBrandCookieName(user.BrandId);
+
+        var cookieLifetime =
+            _configuration["Jwt:CookieLifetimeMinutes"]
+            ?? "10080";
+
+        var cookieMinutes =
+            int.TryParse(
+                cookieLifetime,
+                out var parsedMinutes)
+                ? parsedMinutes
+                : 10080;
+
+        Response.Cookies.Append(
+            cookieName,
+            token,
+            CreateAuthCookieOptions(cookieMinutes)
+        );
+
+        // --------------------------------------------------------
+        // Return authenticated user
+        // --------------------------------------------------------
+
+        return Ok(
+            new AuthUserDto(
+                user.Id,
+                user.Name,
+                user.Email,
+                user.BrandId,
+                brand.Name,
+                user.IsActive,
+                null,
+                token
+            )
+        );
     }
+
+    // ============================================================
+    // LOGIN
+    // ============================================================
 
     [HttpPost("login")]
-    public async Task<ActionResult<AuthUserDto>> Login([FromBody] LoginRequestDto dto)
+    public async Task<ActionResult<AuthUserDto>> Login(
+        [FromBody] LoginRequestDto dto)
     {
-        if (string.IsNullOrWhiteSpace(dto.Email) || string.IsNullOrWhiteSpace(dto.Password))
+        // --------------------------------------------------------
+        // Validate email
+        // --------------------------------------------------------
+
+        if (string.IsNullOrWhiteSpace(dto.Email))
         {
-            return BadRequest(new { error = "Email and password are required." });
+            return BadRequest(new
+            {
+                error = "Email is required."
+            });
         }
 
-        // Must resolve the requesting brand and scope the lookup by it.
-        // Without this, once the same email can exist across multiple
-        // brands, this query becomes ambiguous and could authenticate
-        // you into the WRONG brand's account — reopening the exact
-        // cross-brand leak fixed earlier.
-        var brandFromHeader = Request.Headers["X-Brand"].FirstOrDefault();
-        var resolvedBrandId = ResolveBrand(brandFromHeader, null);
-        if (resolvedBrandId is null)
+        // --------------------------------------------------------
+        // Validate password
+        // --------------------------------------------------------
+
+        if (string.IsNullOrWhiteSpace(dto.Password))
         {
-            return BadRequest(new { error = "A valid brand is required." });
+            return BadRequest(new
+            {
+                error = "Password is required."
+            });
         }
+
+        // --------------------------------------------------------
+        // Resolve brand
+        // --------------------------------------------------------
+
+        var brand = await ResolveBrandAsync();
+
+        if (brand is null)
+        {
+            return BadRequest(new
+            {
+                error =
+                    "A valid brand is required. " +
+                    "The X-Brand header must contain a valid local brand " +
+                    "or external website ID."
+            });
+        }
+
+        // --------------------------------------------------------
+        // Normalize email
+        // --------------------------------------------------------
 
         var normalizedEmail = dto.Email.Trim();
+
+        // --------------------------------------------------------
+        // Find user inside THIS brand
+        // --------------------------------------------------------
+
         var user = await _db.Users
             .Include(u => u.Brand)
-            .FirstOrDefaultAsync(u => u.Email == normalizedEmail && u.BrandId == resolvedBrandId);
+            .FirstOrDefaultAsync(u =>
+                u.Email == normalizedEmail &&
+                u.BrandId == brand.Id);
 
-        if (user is null || !user.IsActive || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
+        // --------------------------------------------------------
+        // Validate credentials
+        // --------------------------------------------------------
+
+        if (user is null ||
+            !user.IsActive ||
+            !BCrypt.Net.BCrypt.Verify(
+                dto.Password,
+                user.PasswordHash))
         {
-            return Unauthorized(new { error = "Invalid email or password." });
+            return Unauthorized(new
+            {
+                error = "Invalid email or password."
+            });
         }
 
-        var token = _jwtTokenService.CreateToken(user.Id, user.Email, user.BrandId, user.Brand?.Name ?? user.BrandId);
-        var cookieName = GetBrandCookieName(user.BrandId);
-        var cookieLifetime = _configuration["Jwt:CookieLifetimeMinutes"] ?? "10080";
+        // --------------------------------------------------------
+        // Create JWT
+        // --------------------------------------------------------
 
-        Response.Cookies.Append(cookieName, token, new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = !IsLocalRequest(),
-            SameSite = SameSiteMode.Lax,
-            Expires = DateTimeOffset.UtcNow.AddMinutes(int.Parse(cookieLifetime)),
-            IsEssential = true,
-            Path = "/"
-        });
+        var token = _jwtTokenService.CreateToken(
+            user.Id,
+            user.Email,
+            user.BrandId,
+            user.Brand?.Name ?? brand.Name
+        );
 
-        return Ok(new AuthUserDto(user.Id, user.Name, user.Email, user.BrandId, user.Brand?.Name ?? user.BrandId, user.IsActive));
+        // --------------------------------------------------------
+        // Brand-specific cookie
+        // --------------------------------------------------------
+
+        var cookieName =
+            GetBrandCookieName(user.BrandId);
+
+        var cookieLifetime =
+            _configuration["Jwt:CookieLifetimeMinutes"]
+            ?? "10080";
+
+        var cookieMinutes =
+            int.TryParse(
+                cookieLifetime,
+                out var parsedMinutes)
+                ? parsedMinutes
+                : 10080;
+
+        Response.Cookies.Append(
+            cookieName,
+            token,
+            CreateAuthCookieOptions(cookieMinutes)
+        );
+
+        // --------------------------------------------------------
+        // Return authenticated user
+        // --------------------------------------------------------
+
+        return Ok(
+            new AuthUserDto(
+                user.Id,
+                user.Name,
+                user.Email,
+                user.BrandId,
+                user.Brand?.Name ?? brand.Name,
+                user.IsActive,
+                null,
+                token
+            )
+        );
     }
+
+    // ============================================================
+    // LOGOUT
+    // ============================================================
 
     [Authorize]
     [HttpPost("logout")]
     public IActionResult Logout()
     {
-        var brandFromClaim = User.FindFirstValue("brand_id");
-        var brandFromHeader = Request.Headers["X-Brand"].FirstOrDefault();
-        var cookieName = GetBrandCookieName(brandFromClaim ?? brandFromHeader);
+        var brandId =
+            User.FindFirst("brand_id")?.Value;
 
-        Response.Cookies.Delete(cookieName, new CookieOptions
+        var cookieName =
+            GetBrandCookieName(brandId);
+
+        Response.Cookies.Delete(
+            cookieName,
+            new CookieOptions
+            {
+                Secure = !IsLocalRequest(),
+
+                SameSite = SameSiteMode.Lax,
+
+                Path = "/"
+            }
+        );
+
+        return Ok(new
         {
-            HttpOnly = true,
-            Secure = !IsLocalRequest(),
-            SameSite = SameSiteMode.Lax,
-            Path = "/"
+            message = "Logged out successfully."
         });
-
-        return Ok(new { message = "Logged out successfully." });
     }
+
+    // ============================================================
+    // CURRENT USER
+    // ============================================================
 
     [Authorize]
     [HttpGet("me")]
     public async Task<ActionResult<CurrentUserDto>> Me()
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
-        if (string.IsNullOrWhiteSpace(userId)) return Unauthorized(new { error = "User is not authenticated." });
+        var userId =
+            User.FindFirst(
+                ClaimTypes.NameIdentifier)?.Value
+            ?? User.FindFirst("sub")?.Value;
+
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Unauthorized();
+        }
 
         var user = await _db.Users
             .Include(u => u.Brand)
-            .FirstOrDefaultAsync(u => u.Id == userId);
+            .FirstOrDefaultAsync(u =>
+                u.Id == userId);
 
-        if (user is null || !user.IsActive) return Unauthorized(new { error = "User is not active." });
-
-        var brandFromHeader = Request.Headers["X-Brand"].FirstOrDefault();
-        if (!string.IsNullOrWhiteSpace(brandFromHeader) &&
-            !string.Equals(brandFromHeader.Trim(), user.BrandId, StringComparison.OrdinalIgnoreCase))
+        if (user is null || !user.IsActive)
         {
-            return Unauthorized(new { error = "User is not authenticated." });
+            return Unauthorized();
         }
 
-        return Ok(new CurrentUserDto(user.Id, user.Name, user.Email, user.BrandId, user.Brand?.Name ?? user.BrandId));
+        var brand = await ResolveBrandAsync();
+        if (brand is not null && !string.Equals(user.BrandId, brand.Id, StringComparison.OrdinalIgnoreCase))
+        {
+            return Unauthorized(new
+            {
+                error = "User does not belong to the requested brand."
+            });
+        }
+
+        var authHeader = Request.Headers["Authorization"].FirstOrDefault();
+        string? token = null;
+        if (!string.IsNullOrWhiteSpace(authHeader) && authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+        {
+            token = authHeader.Substring("Bearer ".Length).Trim();
+        }
+
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            var cookieName = GetBrandCookieName(user.BrandId);
+            token = Request.Cookies[cookieName];
+        }
+
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            token = _jwtTokenService.CreateToken(
+                user.Id,
+                user.Email,
+                user.BrandId,
+                user.Brand?.Name ?? user.BrandId
+            );
+        }
+
+        return Ok(
+            new CurrentUserDto(
+                user.Id,
+                user.Name,
+                user.Email,
+                user.BrandId,
+                user.Brand?.Name ?? user.BrandId,
+                null,
+                token
+            )
+        );
     }
 }

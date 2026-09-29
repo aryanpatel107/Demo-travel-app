@@ -135,12 +135,12 @@ export default function TripsPage() {
   }
 
   return (
-    <section className="mx-auto max-w-4xl px-4 py-12 sm:px-6 sm:py-16">
-      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="font-display text-3xl font-semibold text-ink">Your Trips</h1>
+    <section className="mx-auto max-w-4xl px-4 py-8 sm:px-6 sm:py-16">
+      <div className="mb-6 sm:mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="font-display text-2xl sm:text-3xl font-semibold text-ink">Your Trips</h1>
         <Link
           href="/trips/create"
-          className="brand-button inline-flex items-center justify-center rounded-full bg-coral px-5 py-2 text-sm font-semibold text-sand hover:scale-105"
+          className="brand-button inline-flex min-h-11 items-center justify-center rounded-full bg-coral px-5 py-2.5 text-sm font-semibold text-sand hover:scale-105"
         >
           + New Trip
         </Link>
@@ -154,31 +154,36 @@ export default function TripsPage() {
           actionHref="/trips/create"
         />
       ) : (
-        <ul className="space-y-4">
+        <ul className="space-y-3 sm:space-y-4">
           {trips.map((trip) => (
             <li
               key={trip.id}
-              className="brand-card anim-fade-up flex flex-col gap-4 rounded-2xl border border-cloud bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between"
+              className="brand-card anim-fade-up rounded-2xl border border-cloud bg-white shadow-sm transition hover:shadow-md"
             >
-              <div className="min-w-0">
-                <p className="font-display font-semibold text-ink">{trip.destinationName}</p>
-                <p className="font-mono text-xs text-ink/50">
-                  {trip.startDate} → {trip.endDate}
-                </p>
-              </div>
+              <Link
+                href={`/trips/${trip.id}`}
+                className="flex flex-col gap-2.5 sm:gap-4 p-4 sm:p-5 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div className="min-w-0">
+                  <p className="font-display font-semibold text-base sm:text-lg text-ink truncate">{trip.destinationName}</p>
+                  <p className="font-mono text-xs text-ink/50 mt-0.5">
+                    {trip.startDate} → {trip.endDate}
+                  </p>
+                </div>
 
-              <div className="text-left sm:text-right">
-                <p className="text-sm text-ink/70">
-                  {trip.travelers} traveler{trip.travelers > 1 ? "s" : ""}
-                </p>
-                <span
-                  className={`font-mono text-xs ${
-                    trip.paymentStatus === "paid" ? "text-teal" : "text-coral"
-                  }`}
-                >
-                  {trip.paymentStatus === "paid" ? "Paid" : "Payment pending"}
-                </span>
-              </div>
+                <div className="flex items-center justify-between sm:flex-col sm:items-end text-left sm:text-right pt-2 sm:pt-0 border-t border-slate-100 sm:border-0">
+                  <p className="text-xs sm:text-sm text-ink/70">
+                    {trip.travelers} traveler{trip.travelers > 1 ? "s" : ""}
+                  </p>
+                  <span
+                    className={`font-mono text-xs font-semibold ${
+                      trip.paymentStatus === "paid" ? "text-teal" : "text-coral"
+                    }`}
+                  >
+                    {trip.paymentStatus === "paid" ? "Paid" : "Payment pending"}
+                  </span>
+                </div>
+              </Link>
             </li>
           ))}
         </ul>

@@ -1,4 +1,7 @@
+import React from "react";
 import { View, Text, StyleSheet } from "react-native";
+import { useAppConfig } from "@/contexts/BrandConfigContext";
+import { theme } from "@/constants/theme";
 
 const features = [
   {
@@ -22,24 +25,25 @@ const features = [
 ];
 
 export default function WhyWanderly() {
+  const { branding, primaryColor } = useAppConfig();
+  const websiteName = branding.name?.trim() || "";
+
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>Why Wanderly</Text>
-
-      <Text style={styles.heading}>
-        Travel planning that respects your time
+      <Text style={styles.kicker}>
+        {websiteName ? `WHY ${websiteName.toUpperCase()}` : "WHY CHOOSE US"}
       </Text>
 
-      <View style={styles.featuresContainer}>
+      <Text style={styles.title}>
+        {websiteName ? `Why travel with ${websiteName}` : "Why travel with us"}
+      </Text>
+
+      <View style={styles.featuresList}>
         {features.map((feature) => (
-          <View key={feature.code} style={styles.feature}>
-            <Text style={styles.code}>{feature.code}</Text>
-
-            <Text style={styles.title}>{feature.title}</Text>
-
-            <Text style={styles.description}>
-              {feature.description}
-            </Text>
+          <View key={feature.code} style={styles.featureCard}>
+            <Text style={styles.codeText}>{feature.code}</Text>
+            <Text style={styles.featureTitle}>{feature.title}</Text>
+            <Text style={styles.featureDesc}>{feature.description}</Text>
           </View>
         ))}
       </View>
@@ -49,64 +53,50 @@ export default function WhyWanderly() {
 
 const styles = StyleSheet.create({
   container: {
-    width: "100%",
-    maxWidth: 1152,
-    alignSelf: "center",
-    paddingHorizontal: 24,
-    paddingVertical: 80,
+    paddingHorizontal: 20,
+    paddingVertical: 32,
+    backgroundColor: "#fffdf9",
   },
-
-  label: {
-    fontSize: 12,
-    textTransform: "uppercase",
+  kicker: {
+    fontSize: 11,
     letterSpacing: 2,
-    color: "#E76F51",
-    fontFamily: "monospace",
+    fontWeight: "800",
+    color: theme.colors.coral,
+    marginBottom: 6,
   },
-
-  heading: {
-    marginTop: 8,
-    maxWidth: 520,
-    fontSize: 30,
-    lineHeight: 38,
-    fontWeight: "600",
-    color: "#1F2937",
-  },
-
-  featuresContainer: {
-    marginTop: 48,
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-    gap: 32,
-  },
-
-  feature: {
-    flex: 1,
-    minWidth: 250,
-    borderTopWidth: 1,
-    borderTopColor: "rgba(212, 175, 55, 0.5)",
-    paddingTop: 20,
-  },
-
-  code: {
-    fontSize: 12,
-    color: "rgba(31, 41, 55, 0.4)",
-    fontFamily: "monospace",
-  },
-
   title: {
-    marginTop: 8,
-    fontSize: 18,
-    lineHeight: 24,
-    fontWeight: "600",
-    color: "#1F2937",
+    fontSize: 26,
+    fontWeight: "800",
+    color: theme.colors.ink,
+    marginBottom: 24,
   },
-
-  description: {
-    marginTop: 8,
-    fontSize: 14,
-    lineHeight: 22,
-    color: "rgba(31, 41, 55, 0.7)",
+  featuresList: {
+    gap: 16,
+  },
+  featureCard: {
+    backgroundColor: "#ffffff",
+    borderRadius: 20,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: "#e8dcc5",
+    ...theme.shadows.sm,
+  },
+  codeText: {
+    fontSize: 11,
+    fontFamily: "monospace",
+    fontWeight: "800",
+    color: "#94a3b8",
+    marginBottom: 8,
+  },
+  featureTitle: {
+    fontSize: 18,
+    fontWeight: "800",
+    color: theme.colors.ink,
+    marginBottom: 6,
+  },
+  featureDesc: {
+    fontSize: 13,
+    lineHeight: 19,
+    color: "#64748b",
   },
 });

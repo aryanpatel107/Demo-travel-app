@@ -17,5 +17,13 @@ public class Trip
 
     public Brand Brand { get; set; } = default!;
     public User User { get; set; } = default!;
-    public Payment? Payment { get; set; }
+    public Payment? Payment { get; set; } 
+
+     public ICollection<TripItem> Items { get; set; } = new List<TripItem>();
+
+       public DateTime? CancelledAt { get; set; }
+
+    
 }
+
+

@@ -1,15 +1,25 @@
+"use client";
+
 import { memo } from "react";
 import { Destination } from "@/types/destination";
 import DestinationCard from "./DestinationCard";
-import { config } from "@/config";
+import { useAppConfig } from "@/components/RemoteConfigProvider";
 
 interface DestinationGridProps {
   destinations: Destination[];
   variant?: "wanderly" | "travelpro" | "mytravel";
 }
 
-function DestinationGrid({ destinations, variant }: DestinationGridProps) {
-  const currentVariant = variant ?? config.name.toLowerCase().replace(/\s+/g, "");
+function DestinationGrid({
+  destinations,
+  variant,
+}: DestinationGridProps) {
+  const { branding } = useAppConfig();
+
+  const remoteBrandKey =
+    branding.name?.trim().toLowerCase().replace(/\s+/g, "") || "";
+
+  const currentVariant = variant ?? remoteBrandKey;
 
   if (destinations.length === 0) {
     return (
@@ -29,7 +39,13 @@ function DestinationGrid({ destinations, variant }: DestinationGridProps) {
       ].join(" ")}
     >
       {destinations.map((destination) => (
-        <DestinationCard key={destination.id} destination={destination} variant={currentVariant as "wanderly" | "travelpro" | "mytravel"} />
+        <DestinationCard
+          key={destination.id}
+          destination={destination}
+          variant={
+            currentVariant as "wanderly" | "travelpro" | "mytravel"
+          }
+        />
       ))}
     </div>
   );

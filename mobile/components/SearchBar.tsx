@@ -1,46 +1,69 @@
-import { View, TextInput, StyleSheet } from "react-native";
-import { useState } from "react";
+import React from "react";
+import { View, TextInput, StyleSheet, Pressable, Text } from "react-native";
+import { Colors } from "../constants/theme";
 
 interface SearchBarProps {
-  onSearch: (query: string) => void;
+  value: string;
+  onChangeText: (text: string) => void;
   placeholder?: string;
+  onClear?: () => void;
 }
 
-export default function SearchBar({ onSearch, placeholder }: SearchBarProps) {
-  const [query, setQuery] = useState("");
-
-  function handleChange(text: string) {
-    setQuery(text);
-    onSearch(text);
-  }
-
+export function SearchBar({
+  value,
+  onChangeText,
+  placeholder = "Search destinations, countries, tags...",
+  onClear,
+}: SearchBarProps) {
   return (
-    <View style={styles.wrapper}>
+    <View style={styles.container}>
+      <Text style={styles.searchIcon}>🔍</Text>
       <TextInput
-        value={query}
-        onChangeText={handleChange}
-        placeholder={placeholder ?? "Search destinations..."}
-        placeholderTextColor="rgba(31, 41, 55, 0.4)"
+        value={value}
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        placeholderTextColor={Colors.slate400}
         style={styles.input}
+        returnKeyType="search"
       />
+      {value.length > 0 && onClear ? (
+        <Pressable onPress={onClear} style={styles.clearBtn}>
+          <Text style={styles.clearText}>✕</Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  wrapper: {
-    width: "100%",
-    paddingHorizontal: 20,
+  container: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: Colors.white,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: Colors.slate200,
+    paddingHorizontal: 14,
+    height: 46,
+  },
+  searchIcon: {
+    fontSize: 14,
+    marginRight: 8,
   },
   input: {
-    width: "100%",
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-    backgroundColor: "#FFFFFF",
-    paddingHorizontal: 20,
-    paddingVertical: 12,
+    flex: 1,
     fontSize: 14,
-    color: "#1F2937",
+    color: Colors.slate900,
+    height: "100%",
+  },
+  clearBtn: {
+    padding: 6,
+  },
+  clearText: {
+    fontSize: 12,
+    color: Colors.slate400,
+    fontWeight: "bold",
   },
 });
+
+export default SearchBar;

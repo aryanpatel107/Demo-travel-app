@@ -1,83 +1,77 @@
+import React from "react";
 import { View, Text, StyleSheet } from "react-native";
+import { theme } from "@/constants/theme";
 
-interface BoardingPassCardProps {
-  fromCity: string;
-  fromCode: string;
-  toCity: string;
-  toCode: string;
-  date: string;
-  price: number;
-  duration: string;
+export interface BoardingPassCardProps {
+  fromCity?: string;
+  fromCode?: string;
+  toCity?: string;
+  toCode?: string;
+  date?: string;
+  price?: number;
+  duration?: string;
 }
 
-export default function BoardingPassCard({
-  fromCity,
-  fromCode,
-  toCity,
-  toCode,
-  date,
-  price,
-  duration,
+export function BoardingPassCard({
+  fromCity = "Surat",
+  fromCode = "STV",
+  toCity = "Bali",
+  toCode = "DPS",
+  date = "12 Nov",
+  price = 899,
+  duration = "7h 40m",
 }: BoardingPassCardProps) {
   return (
     <View style={styles.card}>
-
       {/* Top section: route */}
-      <View style={styles.routeSection}>
-
-        <View>
-          <Text style={styles.label}>FROM</Text>
-          <Text style={styles.code}>{fromCode}</Text>
-          <Text style={styles.city}>{fromCity}</Text>
+      <View style={styles.topSection}>
+        <View style={styles.airportCol}>
+          <Text style={styles.subLabel}>FROM</Text>
+          <Text style={styles.codeText}>{fromCode}</Text>
+          <Text style={styles.cityText}>{fromCity}</Text>
         </View>
 
-        <View style={styles.routeLine}>
+        <View style={styles.flightLineContainer}>
           <View style={styles.dot} />
-
           <View style={styles.dashedLine} />
-
-          <Text style={styles.plane}>✈</Text>
-
+          <Text style={styles.planeIcon}>✈</Text>
           <View style={styles.dashedLine} />
-
           <View style={styles.dot} />
         </View>
 
-        <View style={styles.toContainer}>
-          <Text style={styles.label}>TO</Text>
-          <Text style={styles.code}>{toCode}</Text>
-          <Text style={styles.city}>{toCity}</Text>
+        <View style={[styles.airportCol, { alignItems: "flex-end" }]}>
+          <Text style={styles.subLabel}>TO</Text>
+          <Text style={styles.codeText}>{toCode}</Text>
+          <Text style={styles.cityText}>{toCity}</Text>
         </View>
-
       </View>
 
-      {/* Perforated divider */}
-      <View style={styles.dividerContainer}>
-        <View style={styles.sideCircleLeft} />
-        <View style={styles.divider} />
-        <View style={styles.sideCircleRight} />
+      {/* Perforation divider with side notches */}
+      <View style={styles.perforationRow}>
+        <View style={styles.leftNotch} />
+        <View style={styles.perforatedLine} />
+        <View style={styles.rightNotch} />
       </View>
 
-      {/* Bottom section */}
-      <View style={styles.details}>
-
+      {/* Bottom section: details */}
+      <View style={styles.bottomSection}>
         <View>
-          <Text style={styles.label}>DEPARTS</Text>
+          <Text style={styles.detailLabel}>DEPARTS</Text>
           <Text style={styles.detailValue}>{date}</Text>
         </View>
 
         <View>
-          <Text style={styles.label}>DURATION</Text>
+          <Text style={styles.detailLabel}>DURATION</Text>
           <Text style={styles.detailValue}>{duration}</Text>
         </View>
 
-        <View style={styles.fareContainer}>
-          <Text style={styles.label}>FARE</Text>
-          <Text style={styles.fare}>${price}</Text>
+        <View style={{ alignItems: "flex-end" }}>
+          <Text style={styles.detailLabel}>FARE</Text>
+          <Text style={[styles.detailValue, { color: theme.colors.coral }]}>
+            ${price}
+          </Text>
         </View>
-
       </View>
-
     </View>
   );
 }
@@ -85,140 +79,111 @@ export default function BoardingPassCard({
 const styles = StyleSheet.create({
   card: {
     width: "100%",
-    maxWidth: 380,
-    backgroundColor: "#F5EBD7",
+    maxWidth: 340,
+    backgroundColor: theme.colors.sand,
     borderRadius: 20,
     overflow: "hidden",
-
-    // Android shadow
-    elevation: 8,
-
-    // iOS shadow
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 8,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
+    ...theme.shadows.lg,
   },
-
-  routeSection: {
+  topSection: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 24,
-    paddingTop: 24,
-    paddingBottom: 24,
+    padding: 20,
+    paddingBottom: 16,
   },
-
-  label: {
+  airportCol: {
+    gap: 2,
+  },
+  subLabel: {
     fontSize: 10,
     letterSpacing: 1.5,
-    color: "rgba(30, 30, 30, 0.5)",
+    fontFamily: "monospace",
+    color: "rgba(22, 36, 31, 0.5)",
+    textTransform: "uppercase",
+  },
+  codeText: {
+    fontSize: 24,
+    fontWeight: "800",
+    color: theme.colors.ink,
+  },
+  cityText: {
+    fontSize: 12,
+    color: "rgba(22, 36, 31, 0.65)",
     fontWeight: "600",
   },
-
-  code: {
-    marginTop: 4,
-    fontSize: 28,
-    fontWeight: "700",
-    color: "#1F2937",
-  },
-
-  city: {
-    marginTop: 2,
-    fontSize: 12,
-    color: "rgba(30, 30, 30, 0.6)",
-  },
-
-  routeLine: {
+  flightLineContainer: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 8,
+    paddingHorizontal: 12,
   },
-
   dot: {
-    width: 7,
-    height: 7,
-    borderRadius: 4,
-    backgroundColor: "#E8C766",
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: theme.colors.gold,
   },
-
   dashedLine: {
     flex: 1,
     height: 1,
-    borderTopWidth: 1,
+    borderWidth: 1,
+    borderColor: "rgba(22, 36, 31, 0.25)",
     borderStyle: "dashed",
-    borderColor: "rgba(30, 30, 30, 0.3)",
     marginHorizontal: 4,
   },
-
-  plane: {
-    fontSize: 18,
-    color: "#E76F51",
+  planeIcon: {
+    fontSize: 16,
+    color: theme.colors.coral,
   },
-
-  toContainer: {
-    alignItems: "flex-end",
-  },
-
-  dividerContainer: {
-    height: 1,
-    position: "relative",
-    justifyContent: "center",
-  },
-
-  divider: {
-    width: "100%",
-    borderTopWidth: 1,
-    borderStyle: "dashed",
-    borderColor: "rgba(30, 30, 30, 0.25)",
-  },
-
-  sideCircleLeft: {
-    position: "absolute",
-    left: -12,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: "#0E5C56",
-  },
-
-  sideCircleRight: {
-    position: "absolute",
-    right: -12,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: "#0E5C56",
-  },
-
-  details: {
+  perforationRow: {
     flexDirection: "row",
     alignItems: "center",
+    position: "relative",
+    height: 24,
+  },
+  leftNotch: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: theme.colors.teal,
+    marginLeft: -10,
+  },
+  perforatedLine: {
+    flex: 1,
+    height: 1,
+    borderWidth: 1,
+    borderColor: "rgba(22, 36, 31, 0.2)",
+    borderStyle: "dashed",
+  },
+  rightNotch: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: theme.colors.teal,
+    marginRight: -10,
+  },
+  bottomSection: {
+    flexDirection: "row",
     justifyContent: "space-between",
-    paddingHorizontal: 24,
-    paddingTop: 20,
-    paddingBottom: 24,
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 20,
   },
-
+  detailLabel: {
+    fontSize: 9,
+    fontFamily: "monospace",
+    letterSpacing: 1.5,
+    color: "rgba(22, 36, 31, 0.5)",
+    marginBottom: 4,
+  },
   detailValue: {
-    marginTop: 4,
-    fontSize: 12,
-    fontWeight: "600",
-    color: "#1F2937",
-  },
-
-  fareContainer: {
-    alignItems: "flex-end",
-  },
-
-  fare: {
-    marginTop: 4,
-    fontSize: 14,
+    fontSize: 13,
+    fontFamily: "monospace",
     fontWeight: "700",
-    color: "#E76F51",
+    color: theme.colors.ink,
   },
 });
+
+export default BoardingPassCard;

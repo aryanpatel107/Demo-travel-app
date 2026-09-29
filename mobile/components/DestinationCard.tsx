@@ -1,76 +1,62 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  Pressable,
-} from "react-native";
+import React from "react";
+import { View, Text, StyleSheet, Pressable } from "react-native";
+import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import type { Destination } from "../type/destination";
+import type { Destination } from "@/data/destinations";
+import { Colors, Shadows } from "@/constants/theme";
+import { useBrandConfig } from "@/contexts/BrandConfigContext";
 
 interface DestinationCardProps {
   destination: Destination;
+  onPress?: () => void;
 }
 
-export default function DestinationCard({
-  destination,
-}: DestinationCardProps) {
+export function DestinationCard({ destination, onPress }: DestinationCardProps) {
   const router = useRouter();
-
-  const handlePress = () => {
-    router.push(`/destinations/${destination.id}`);
-  };
+  const { primaryColor } = useBrandConfig();
 
   return (
     <Pressable
-      onPress={handlePress}
       style={({ pressed }) => [
         styles.card,
-        pressed && styles.cardPressed,
+        pressed && styles.pressed,
       ]}
+      onPress={onPress || (() => router.push(`/destinations/${destination.id}` as never))}
     >
-      {/* Image */}
       <View style={styles.imageContainer}>
         <Image
           source={{ uri: destination.imageUrl }}
           style={styles.image}
-          resizeMode="cover"
+          contentFit="cover"
+          transition={300}
         />
-
-        {/* Rating */}
-        <View style={styles.rating}>
-          <Text style={styles.ratingText}>
-            {destination.rating}
-          </Text>
-        </View>
+        {destination.rating ? (
+          <View style={styles.ratingBadge}>
+            <Text style={styles.ratingText}>★ {destination.rating}</Text>
+          </View>
+        ) : null}
       </View>
 
-      {/* Content */}
       <View style={styles.content}>
-        <Text style={styles.name}>
-          {destination.name}
-        </Text>
+        <View style={styles.header}>
+          <Text style={styles.name}>{destination.name}</Text>
+          <Text style={styles.country}>📍 {destination.country}</Text>
+        </View>
 
-        <Text style={styles.country}>
-          {destination.country}
-        </Text>
-
-        <Text
-          style={styles.description}
-          numberOfLines={2}
-        >
+        <Text style={styles.description} numberOfLines={2}>
           {destination.description}
         </Text>
 
-        {/* Bottom information */}
-        <View style={styles.bottomRow}>
-          <Text style={styles.duration}>
-            {destination.duration}
-          </Text>
-
-          <Text style={styles.price}>
-            ${destination.price}
-          </Text>
+        <View style={styles.footer}>
+          <View>
+            <Text style={styles.priceLabel}>From</Text>
+            <Text style={[styles.priceValue, { color: primaryColor }]}>
+              ${destination.price}
+            </Text>
+          </View>
+          <View style={styles.durationBadge}>
+            <Text style={styles.durationText}>{destination.duration}</Text>
+          </View>
         </View>
       </View>
     </Pressable>
@@ -79,110 +65,94 @@ export default function DestinationCard({
 
 const styles = StyleSheet.create({
   card: {
-    width: "100%",
-    overflow: "hidden",
-    borderRadius: 16,
+    backgroundColor: Colors.white,
+    borderRadius: 18,
     borderWidth: 1,
-    borderColor: "#E5E7EB",
-    backgroundColor: "#FFFFFF",
-
-    // Shadow - iOS
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-
-    // Shadow - Android
-    elevation: 2,
+    borderColor: Colors.slate200,
+    overflow: "hidden",
+    marginBottom: 16,
+    ...Shadows.md,
   },
-
-  cardPressed: {
+  pressed: {
     opacity: 0.9,
+    transform: [{ scale: 0.99 }],
   },
-
   imageContainer: {
-    height: 192,
     width: "100%",
+    height: 180,
     position: "relative",
-    overflow: "hidden",
+    backgroundColor: Colors.slate100,
   },
-
   image: {
-    height: "100%",
     width: "100%",
+    height: "100%",
   },
-
-  rating: {
+  ratingBadge: {
     position: "absolute",
-    right: 12,
     top: 12,
-    height: 40,
-    width: 40,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: "rgba(212, 175, 55, 0.6)",
-    backgroundColor: "rgba(250, 247, 237, 0.95)",
+    right: 12,
+    backgroundColor: "rgba(15, 23, 42, 0.8)",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
   },
-
   ratingText: {
+    color: Colors.gold,
     fontSize: 12,
-    fontWeight: "600",
-    color: "#0F766E",
-    fontFamily: "monospace",
+    fontWeight: "700",
   },
-
   content: {
-    padding: 20,
+    padding: 16,
+    gap: 8,
   },
-
+  header: {
+    gap: 2,
+  },
   name: {
     fontSize: 18,
-    lineHeight: 24,
-    fontWeight: "600",
-    color: "#1F2937",
+    fontWeight: "800",
+    color: Colors.slate900,
   },
-
   country: {
-    marginTop: 2,
     fontSize: 12,
-    letterSpacing: 2,
-    textTransform: "uppercase",
-    color: "rgba(31, 41, 55, 0.5)",
-  },
-
-  description: {
-    marginTop: 8,
-    fontSize: 14,
-    lineHeight: 20,
-    color: "rgba(31, 41, 55, 0.7)",
-  },
-
-  bottomRow: {
-    marginTop: 16,
-    paddingTop: 12,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    borderTopWidth: 1,
-    borderTopColor: "#E5E7EB",
-    borderStyle: "dashed",
-  },
-
-  duration: {
-    fontSize: 12,
-    color: "rgba(31, 41, 55, 0.5)",
-    fontFamily: "monospace",
-  },
-
-  price: {
-    fontSize: 14,
     fontWeight: "600",
-    color: "#E76F51",
-    fontFamily: "monospace",
+    color: Colors.slate500,
+  },
+  description: {
+    fontSize: 13,
+    color: Colors.slate600,
+    lineHeight: 18,
+  },
+  footer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-end",
+    marginTop: 6,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: Colors.slate100,
+  },
+  priceLabel: {
+    fontSize: 10,
+    color: Colors.slate500,
+    textTransform: "uppercase",
+    fontWeight: "700",
+  },
+  priceValue: {
+    fontSize: 18,
+    fontWeight: "900",
+  },
+  durationBadge: {
+    backgroundColor: Colors.slate100,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  durationText: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: Colors.slate700,
   },
 });
+
+export default DestinationCard;

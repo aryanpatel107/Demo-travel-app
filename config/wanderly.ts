@@ -1,18 +1,19 @@
+
 import { BrandConfig } from "./types";
 
 export const wanderlyConfig: BrandConfig = {
-  name: "Wanderly",
-  logo: "W",
+  name: "GujjuTours",
+  logo: "G",
   visualStyle: "editorial",
 
   colors: {
-    primary: "#0F766E",
-    secondary: "#F59E0B",
+    primary: "#2882c5",
+    secondary: "#f58e83",
     background: "#F8FAFC",
     surface: "#FFFFFF",
     text: "#0F172A",
     mutedText: "#475569",
-    accent: "#F97316",
+    accent: "#f58e83",
   },
 
   navigation: [
@@ -24,9 +25,9 @@ export const wanderlyConfig: BrandConfig = {
   ],
 
   hero: {
-    badge: "Explore Beyond",
-    title: "Find places worth remembering.",
-    subtitle: "Curated escapes, immersive journeys, and story-rich experiences designed for bold travelers.",
+    badge: "Top Holiday Escapes",
+    title: "Explore more. Worry less.",
+    subtitle: "Handcrafted holiday packages, best hotel rates, seamless visa services, and 24/7 on-ground assistance for unforgettable memories.",
     primaryCtaLabel: "Explore Destinations",
     secondaryCtaLabel: "Plan a Trip",
     primaryCtaHref: "/destinations",
@@ -46,32 +47,54 @@ export const wanderlyConfig: BrandConfig = {
   },
 
   sectionTitles: {
-    featured: "Popular Destinations",
+    featured: "Popular Destinations & Packages",
     benefits: "Travel planning that respects your time",
-    testimonials: "Trusted by wanderers everywhere",
-    cta: "Your next trip is one boarding pass away",
+    testimonials: "Trusted by travelers everywhere",
+    cta: "Your next family holiday is one click away",
     tripPlanner: "Plan your next escape",
-    travelStories: "Travel stories from the road",
-    specialOffers: "Handpicked escapes",
+    travelStories: "Travel stories from our travelers",
+    specialOffers: "Exclusive holiday packages",
     recommended: "Recommended for you",
   },
 
   splash: {
-    title: "Wanderly",
-    subtitle: "Explore Beyond",
-    logo: "W",
+    title: "GujjuTours",
+    subtitle: "Unforgettable Holiday Experiences",
+    logo: "G",
     backgroundColor: "#0f172a",
-    accentColor: "#f59e0b",
+    accentColor: "#2882c5",
     animation: "pulse",
   },
 
   metadata: {
-    title: "Wanderly | Slow Travel & Curated Escapes",
-    description: "Discover story-rich destinations and beautifully paced itineraries designed for meaningful travel with Wanderly.",
+    title: "GujjuTours | Unforgettable Holiday Experiences",
+    description: "Discover handcrafted holiday packages, best hotel deals, and complete travel support with GujjuTours.",
   },
 
   contact: {
-    email: "hello@wanderly.com",
-    phone: "+91 98765 43210",
+    email: "booking@gujjutours.com",
+    phone: "+91 9875095616",
   },
+
+  font: {
+    family: "Poppins",
+  },
+  websiteModules: [
+    "HOTEL",
+    "PACKAGE",
+    "TOUR",
+    "FLIGHT",
+    "TRANSFER",
+    "VISA",
+    "RESTAURANT",
+    "BUILDPACKAGE",
+  ],
+  recommendations: ["PACKAGE", "HOTEL", "TOUR"],
+  socialMediaConfig: [],
+  geo: {
+    country: "IN",
+    city: null,
+    ip: null,
+  },
+  copyright: `© ${new Date().getFullYear()} GujjuTours. All rights reserved.`,
 };

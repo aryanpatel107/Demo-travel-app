@@ -1,17 +1,34 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
-import { config } from "@/config";
+import { useAppConfig } from "@/components/RemoteConfigProvider";
 import { destinations } from "@/data/destinations";
 
 const featured = destinations.slice(0, 4);
 
 export default function BrandDestinations() {
-  if (config.name === "Wanderly") {
+  const { branding, brandKey } = useAppConfig();
+
+  const brandName = branding.name?.trim() || "";
+  const normalizedBrandName = brandName.toLowerCase().replace(/\s+/g, "");
+
+  const isWanderly =
+    brandKey === "wanderly" ||
+    normalizedBrandName.includes("wanderly") ||
+    normalizedBrandName.includes("gujju");
+  const isTravelPro =
+    brandKey === "travelpro" ||
+    normalizedBrandName.includes("travelpro");
+
+  if (isWanderly) {
     return (
       <section className="wanderly-destination-section animate-reveal animate-reveal-delay-1">
         <div className="wanderly-destination-section__header">
           <p className="wanderly-kicker">CURATED DESTINATIONS</p>
-          <h2 className="wanderly-section-title">Go where curiosity takes you.</h2>
+          <h2 className="wanderly-section-title">
+            Go where curiosity takes you.
+          </h2>
         </div>
 
         <div className="wanderly-destination-grid">
@@ -19,7 +36,9 @@ export default function BrandDestinations() {
             <Link
               key={destination.id}
               href={`/destinations/${destination.id}`}
-              className={`brand-card wanderly-destination-card wanderly-destination-card--${index + 1}`}
+              className={`brand-card wanderly-destination-card wanderly-destination-card--${
+                index + 1
+              }`}
             >
               <div className="wanderly-destination-card__image-wrap relative">
                 <Image
@@ -31,10 +50,19 @@ export default function BrandDestinations() {
                   unoptimized
                 />
               </div>
+
               <div className="wanderly-destination-card__content">
-                <p className="wanderly-destination-card__country">{destination.country}</p>
-                <h3 className="wanderly-destination-card__name">{destination.name}</h3>
-                <p className="wanderly-destination-card__description">{destination.description}</p>
+                <p className="wanderly-destination-card__country">
+                  {destination.country}
+                </p>
+
+                <h3 className="wanderly-destination-card__name">
+                  {destination.name}
+                </h3>
+
+                <p className="wanderly-destination-card__description">
+                  {destination.description}
+                </p>
               </div>
             </Link>
           ))}
@@ -43,22 +71,35 @@ export default function BrandDestinations() {
     );
   }
 
-  if (config.name === "TravelPro") {
+  if (isTravelPro) {
     return (
       <section className="mx-auto max-w-6xl px-6 py-20 animate-reveal animate-reveal-delay-1">
         <div className="mb-8 flex items-center justify-between gap-4">
           <div>
-            <p className="font-mono text-xs uppercase tracking-[0.3em] text-sky-600">Popular routes</p>
-            <h2 className="mt-3 font-display text-4xl text-slate-900">Top destinations</h2>
+            <p className="font-mono text-xs uppercase tracking-[0.3em] text-sky-600">
+              Popular routes
+            </p>
+
+            <h2 className="mt-3 font-display text-4xl text-slate-900">
+              Top destinations
+            </h2>
           </div>
-          <Link href="/destinations" className="font-mono text-[11px] uppercase tracking-[0.25em] text-slate-700 hover:text-sky-700">
+
+          <Link
+            href="/destinations"
+            className="font-mono text-[11px] uppercase tracking-[0.25em] text-slate-700 hover:text-sky-700"
+          >
             View all →
           </Link>
         </div>
 
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
           {featured.map((destination) => (
-            <Link key={destination.id} href={`/destinations/${destination.id}`} className="brand-card group rounded-[1.5rem] border border-slate-200 bg-white p-3 shadow-sm transition-shadow hover:shadow-md">
+            <Link
+              key={destination.id}
+              href={`/destinations/${destination.id}`}
+              className="brand-card group rounded-[1.5rem] border border-slate-200 bg-white p-3 shadow-sm transition-shadow hover:shadow-md"
+            >
               <div className="relative h-44 overflow-hidden rounded-[1.15rem]">
                 <Image
                   src={destination.imageUrl}
@@ -69,16 +110,29 @@ export default function BrandDestinations() {
                   unoptimized
                 />
               </div>
+
               <div className="p-3">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <p className="font-display text-2xl font-semibold text-slate-900">{destination.name}</p>
-                    <p className="mt-1 text-xs uppercase tracking-[0.2em] text-slate-500">{destination.country}</p>
+                    <p className="font-display text-2xl font-semibold text-slate-900">
+                      {destination.name}
+                    </p>
+
+                    <p className="mt-1 text-xs uppercase tracking-[0.2em] text-slate-500">
+                      {destination.country}
+                    </p>
                   </div>
-                  <span className="text-lg font-semibold text-sky-600">${destination.price}</span>
+
+                  <span className="text-lg font-semibold text-sky-600">
+                    ${destination.price}
+                  </span>
                 </div>
+
                 <div className="mt-4 flex items-center justify-between border-t border-slate-200 pt-3">
-                  <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500">Explore</span>
+                  <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500">
+                    Explore
+                  </span>
+
                   <span className="text-sky-600">→</span>
                 </div>
               </div>
@@ -92,13 +146,22 @@ export default function BrandDestinations() {
   return (
     <section className="mx-auto max-w-6xl px-6 py-20 animate-reveal animate-reveal-delay-1">
       <div className="mb-8">
-        <p className="font-mono text-xs uppercase tracking-[0.3em] text-violet-600">Curated picks</p>
-        <h2 className="mt-3 font-display text-4xl text-slate-900">Trips picked for you</h2>
+        <p className="font-mono text-xs uppercase tracking-[0.3em] text-violet-600">
+          Curated picks
+        </p>
+
+        <h2 className="mt-3 font-display text-4xl text-slate-900">
+          Trips picked for you
+        </h2>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
         {featured.map((destination) => (
-          <Link key={destination.id} href={`/destinations/${destination.id}`} className="brand-card group flex overflow-hidden rounded-[2rem] border border-violet-100 bg-white shadow-sm transition-transform hover:-translate-y-0.5">
+          <Link
+            key={destination.id}
+            href={`/destinations/${destination.id}`}
+            className="brand-card group flex overflow-hidden rounded-[2rem] border border-violet-100 bg-white shadow-sm transition-transform hover:-translate-y-0.5"
+          >
             <div className="relative w-2/5 overflow-hidden">
               <Image
                 src={destination.imageUrl}
@@ -113,16 +176,31 @@ export default function BrandDestinations() {
             <div className="flex flex-1 flex-col justify-between p-6">
               <div>
                 <div className="mb-3 flex items-center justify-between">
-                  <span className="rounded-full bg-violet-50 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.2em] text-violet-700">Recommended</span>
+                  <span className="rounded-full bg-violet-50 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.2em] text-violet-700">
+                    Recommended
+                  </span>
+
                   <span className="text-xl">♡</span>
                 </div>
-                <p className="font-display text-3xl font-semibold text-slate-900">{destination.name}</p>
-                <p className="mt-1 text-xs uppercase tracking-[0.2em] text-slate-500">{destination.country}</p>
+
+                <p className="font-display text-3xl font-semibold text-slate-900">
+                  {destination.name}
+                </p>
+
+                <p className="mt-1 text-xs uppercase tracking-[0.2em] text-slate-500">
+                  {destination.country}
+                </p>
               </div>
 
-              <p className="mt-4 text-sm text-slate-600">{destination.description}</p>
+              <p className="mt-4 text-sm text-slate-600">
+                {destination.description}
+              </p>
+
               <div className="mt-4 flex items-center justify-between border-t border-violet-100 pt-3">
-                <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500">Ideal for</span>
+                <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500">
+                  Ideal for
+                </span>
+
                 <span className="text-violet-700">Plan →</span>
               </div>
             </div>

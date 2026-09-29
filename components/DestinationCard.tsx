@@ -1,7 +1,9 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { memo } from "react";
-import { config } from "@/config";
+import { useAppConfig } from "@/components/RemoteConfigProvider";
 import { Destination } from "@/types/destination";
 
 interface DestinationCardProps {
@@ -10,7 +12,13 @@ interface DestinationCardProps {
 }
 
 function DestinationCard({ destination, variant }: DestinationCardProps) {
-  const selectedVariant = variant ?? (config.name.toLowerCase().replace(/\s+/g, "") || "wanderly");
+  const { branding } = useAppConfig();
+
+  const remoteBrandKey =
+    branding.name?.trim().toLowerCase().replace(/\s+/g, "") || "";
+
+  const selectedVariant = variant ?? remoteBrandKey;
+
   const isWanderly = selectedVariant === "wanderly";
   const isTravelPro = selectedVariant === "travelpro";
 
@@ -30,22 +38,38 @@ function DestinationCard({ destination, variant }: DestinationCardProps) {
 
   const nameClassName = [
     "font-display text-xl font-semibold tracking-tight",
-    isWanderly ? "text-[#16241f]" : isTravelPro ? "text-slate-900" : "text-[#20173c]",
+    isWanderly
+      ? "text-[#16241f]"
+      : isTravelPro
+        ? "text-slate-900"
+        : "text-[#20173c]",
   ].join(" ");
 
   const countryClassName = [
     "mt-1 text-[11px] uppercase tracking-[0.2em]",
-    isWanderly ? "text-[#4a5a52]" : isTravelPro ? "text-slate-500" : "text-[#72668f]",
+    isWanderly
+      ? "text-[#4a5a52]"
+      : isTravelPro
+        ? "text-slate-500"
+        : "text-[#72668f]",
   ].join(" ");
 
   const descriptionClassName = [
     "mt-3 line-clamp-3 text-sm leading-6",
-    isWanderly ? "text-[#33433d]" : isTravelPro ? "text-slate-600" : "text-[#4a4568]",
+    isWanderly
+      ? "text-[#33433d]"
+      : isTravelPro
+        ? "text-slate-600"
+        : "text-[#4a4568]",
   ].join(" ");
 
   const metaClassName = [
     "mt-4 flex items-center justify-between border-t pt-3 font-mono text-[11px] uppercase tracking-[0.12em]",
-    isWanderly ? "border-[#eadfc5] text-[#4a5a52]" : isTravelPro ? "border-slate-200 text-slate-500" : "border-[#ece5ff] text-[#5a4a7c]",
+    isWanderly
+      ? "border-[#eadfc5] text-[#4a5a52]"
+      : isTravelPro
+        ? "border-slate-200 text-slate-500"
+        : "border-[#ece5ff] text-[#5a4a7c]",
   ].join(" ");
 
   const ratingClassName = [
@@ -74,6 +98,7 @@ function DestinationCard({ destination, variant }: DestinationCardProps) {
           className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
           unoptimized
         />
+
         <span className={ratingClassName}>{destination.rating}</span>
       </div>
 
@@ -83,14 +108,26 @@ function DestinationCard({ destination, variant }: DestinationCardProps) {
             <h3 className={nameClassName}>{destination.name}</h3>
             <p className={countryClassName}>{destination.country}</p>
           </div>
-          <span className={`rounded-full px-2.5 py-1 ${tagStyle}`}>{destination.tags[0] ?? "trip"}</span>
+
+          <span className={`rounded-full px-2.5 py-1 ${tagStyle}`}>
+            {destination.tags[0] ?? "trip"}
+          </span>
         </div>
 
         <p className={descriptionClassName}>{destination.description}</p>
 
         <div className={metaClassName}>
           <span>{destination.duration}</span>
-          <span className={isWanderly ? "text-[#d96a3a]" : isTravelPro ? "text-blue-600" : "text-[#6d46b9]"}>
+
+          <span
+            className={
+              isWanderly
+                ? "text-[#d96a3a]"
+                : isTravelPro
+                  ? "text-blue-600"
+                  : "text-[#6d46b9]"
+            }
+          >
             ${destination.price}
           </span>
         </div>

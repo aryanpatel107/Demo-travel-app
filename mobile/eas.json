@@ -1,0 +1,94 @@
+{
+  "cli": {
+    "version": ">= 12.0.0"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "APP_BRAND": "tripgoasia",
+        "EXPO_PUBLIC_HOSTNAME": "www.tripgoasia.com",
+        "EXPO_PUBLIC_API_BASE_URL": "https://stagingapi.tripgoasia.com",
+        "EXPO_PUBLIC_API_URL": "https://api.travelapp.com",
+        "EXPO_PUBLIC_APP_API_URL": "https://api.travelapp.com"
+      }
+    },
+    "preview:tripgoasia": {
+      "extends": "preview",
+      "env": {
+        "APP_BRAND": "tripgoasia",
+        "EXPO_PUBLIC_HOSTNAME": "www.tripgoasia.com",
+        "EXPO_PUBLIC_API_BASE_URL": "https://stagingapi.tripgoasia.com",
+        "EXPO_PUBLIC_API_URL": "https://api.travelapp.com",
+        "EXPO_PUBLIC_APP_API_URL": "https://api.travelapp.com"
+      }
+    },
+    "preview:gujjutours": {
+      "extends": "preview",
+      "env": {
+        "APP_BRAND": "gujjutours",
+        "EXPO_PUBLIC_HOSTNAME": "www.gujjutours.com",
+        "EXPO_PUBLIC_API_BASE_URL": "https://stagingapi.gujjutours.com",
+        "EXPO_PUBLIC_API_URL": "https://api.travelapp.com",
+        "EXPO_PUBLIC_APP_API_URL": "https://api.travelapp.com"
+      }
+    },
+    "preview:technoheaven": {
+      "extends": "preview",
+      "env": {
+        "APP_BRAND": "technoheaven",
+        "EXPO_PUBLIC_HOSTNAME": "stagingb2b.technoheaven.com",
+        "EXPO_PUBLIC_API_BASE_URL": "https://stagingapi.technoheaven.com",
+        "EXPO_PUBLIC_API_URL": "https://api.travelapp.com",
+        "EXPO_PUBLIC_APP_API_URL": "https://api.travelapp.com"
+      }
+    },
+    "production": {
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.travelapp.com",
+        "EXPO_PUBLIC_APP_API_URL": "https://api.travelapp.com"
+      }
+    },
+    "production:tripgoasia": {
+      "extends": "production",
+      "env": {
+        "APP_BRAND": "tripgoasia",
+        "EXPO_PUBLIC_HOSTNAME": "www.tripgoasia.com",
+        "EXPO_PUBLIC_API_BASE_URL": "https://stagingapi.tripgoasia.com",
+        "EXPO_PUBLIC_API_URL": "https://api.travelapp.com",
+        "EXPO_PUBLIC_APP_API_URL": "https://api.travelapp.com"
+      }
+    },
+    "production:gujjutours": {
+      "extends": "production",
+      "env": {
+        "APP_BRAND": "gujjutours",
+        "EXPO_PUBLIC_HOSTNAME": "www.gujjutours.com",
+        "EXPO_PUBLIC_API_BASE_URL": "https://stagingapi.gujjutours.com",
+        "EXPO_PUBLIC_API_URL": "https://api.travelapp.com",
+        "EXPO_PUBLIC_APP_API_URL": "https://api.travelapp.com"
+      }
+    },
+    "production:technoheaven": {
+      "extends": "production",
+      "env": {
+        "APP_BRAND": "technoheaven",
+        "EXPO_PUBLIC_HOSTNAME": "stagingb2b.technoheaven.com",
+        "EXPO_PUBLIC_API_BASE_URL": "https://stagingapi.technoheaven.com",
+        "EXPO_PUBLIC_API_URL": "https://api.travelapp.com",
+        "EXPO_PUBLIC_APP_API_URL": "https://api.travelapp.com"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

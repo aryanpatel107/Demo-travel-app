@@ -21,7 +21,8 @@ public record AuthUserDto(
     string BrandId,
     string Brand,
     bool IsActive,
-    string? Role = null
+    string? Role = null,
+    string? Token = null
 );
 
 public record CurrentUserDto(
@@ -30,5 +31,6 @@ public record CurrentUserDto(
     string Email,
     string BrandId,
     string Brand,
-    string? Role = null
+    string? Role = null,
+    string? Token = null
 );

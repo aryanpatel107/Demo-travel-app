@@ -1,37 +1,34 @@
+import React from "react";
 import { View, Text, StyleSheet, Pressable } from "react-native";
 import { useRouter } from "expo-router";
+import { useAppConfig } from "@/contexts/BrandConfigContext";
+import { theme } from "@/constants/theme";
 
 export default function CTASection() {
   const router = useRouter();
+  const { branding, primaryColor } = useAppConfig();
 
-  const handleExplore = () => {
-    router.push("/destinations");
-  };
+  const websiteName = branding.name?.trim() || "";
+  const resolvedColor = primaryColor || theme.colors.coral;
 
   return (
-    <View style={styles.section}>
+    <View style={styles.container}>
       <View style={styles.card}>
-        {/* Label */}
-        <Text style={styles.label}>
-          Ready when you are
+        <Text style={[styles.kicker, { color: resolvedColor }]}>
+          READY WHEN YOU ARE
         </Text>
 
-        {/* Heading */}
-        <Text style={styles.heading}>
-          Your next trip is one boarding pass away
+        <Text style={styles.title}>
+          {websiteName
+            ? `Plan your next journey with ${websiteName}`
+            : "Plan your next journey"}
         </Text>
 
-        {/* Button */}
         <Pressable
-          onPress={handleExplore}
-          style={({ pressed }) => [
-            styles.button,
-            pressed && styles.buttonPressed,
-          ]}
+          style={[styles.button, { backgroundColor: resolvedColor }]}
+          onPress={() => router.push("/destinations")}
         >
-          <Text style={styles.buttonText}>
-            Start Exploring
-          </Text>
+          <Text style={styles.buttonText}>Start Exploring</Text>
         </Pressable>
       </View>
     </View>
@@ -39,63 +36,44 @@ export default function CTASection() {
 }
 
 const styles = StyleSheet.create({
-  section: {
-    width: "100%",
-    maxWidth: 1152,
-    alignSelf: "center",
-    paddingHorizontal: 24,
-    paddingVertical: 80,
+  container: {
+    paddingHorizontal: 20,
+    paddingVertical: 28,
   },
-
   card: {
-    width: "100%",
+    backgroundColor: "#ffffff",
+    borderRadius: 24,
+    padding: 28,
     alignItems: "center",
-    gap: 24,
-
     borderWidth: 1,
-    borderColor: "rgba(212, 175, 55, 0.4)",
-    borderRadius: 16,
-
-    backgroundColor: "#FFFFFF",
-
-    paddingHorizontal: 32,
-    paddingVertical: 56,
+    borderColor: "#e2e8f0",
+    ...theme.shadows.md,
   },
-
-  label: {
-    fontSize: 12,
-    textTransform: "uppercase",
+  kicker: {
+    fontSize: 11,
     letterSpacing: 2,
-    color: "#E76F51",
-    fontFamily: "monospace",
-    textAlign: "center",
+    fontWeight: "800",
+    marginBottom: 8,
+    textTransform: "uppercase",
   },
-
-  heading: {
-    maxWidth: 500,
-    fontSize: 30,
-    lineHeight: 38,
-    fontWeight: "600",
-    color: "#1F2937",
+  title: {
+    fontSize: 24,
+    fontWeight: "800",
+    color: theme.colors.ink,
     textAlign: "center",
+    lineHeight: 30,
+    marginBottom: 20,
   },
-
   button: {
-    marginTop: 4,
+    paddingVertical: 14,
+    paddingHorizontal: 28,
     borderRadius: 999,
-    backgroundColor: "#E76F51",
-    paddingHorizontal: 32,
-    paddingVertical: 12,
+    alignItems: "center",
+    justifyContent: "center",
   },
-
-  buttonPressed: {
-    opacity: 0.8,
-    transform: [{ scale: 0.97 }],
-  },
-
   buttonText: {
+    color: "#ffffff",
+    fontWeight: "700",
     fontSize: 14,
-    fontWeight: "600",
-    color: "#FAF7ED",
   },
 });

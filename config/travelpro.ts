@@ -1,34 +1,34 @@
 import { BrandConfig } from "./types";
 
 export const travelproConfig: BrandConfig = {
-  name: "TravelPro",
-  logo: "TP",
+  name: "TripGoAsia",
+  logo: "TGA",
   visualStyle: "professional",
 
   colors: {
-    primary: "#7C3AED",
-    secondary: "#F97316",
-    background: "#F6F3FF",
+    primary: "#FF932C",
+    secondary: "#3F3F69",
+    background: "#F8FAFC",
     surface: "#FFFFFF",
     text: "#1F2937",
     mutedText: "#475569",
-    accent: "#0EA5E9",
+    accent: "#3F3F69",
   },
 
   navigation: [
     { href: "/", label: "Home" },
     { href: "/destinations", label: "Destinations" },
-    { href: "/trips", label: "Trips" },
-    { href: "/contact", label: "Contact" },
+    { href: "/trips", label: "My Bookings" },
     { href: "/about", label: "About" },
+    { href: "/contact", label: "Contact" },
   ],
 
   hero: {
-    badge: "Travel booking system",
-    title: "Book smarter. Travel better.",
-    subtitle: "Premium routes, curated packages, and reliable trip management for travelers who expect smooth planning.",
-    primaryCtaLabel: "Search Trips",
-    secondaryCtaLabel: "Create Booking",
+    badge: "Curated Journeys Across Asia",
+    title: "Explore Asia with Confidence.",
+    subtitle: "Handcrafted journeys across Thailand, Bali, Japan, Vietnam, and beyond with local guides and dedicated care.",
+    primaryCtaLabel: "Explore Asia",
+    secondaryCtaLabel: "Plan a Trip",
     primaryCtaHref: "/destinations",
     secondaryCtaHref: "/trips/create",
   },
@@ -46,32 +46,45 @@ export const travelproConfig: BrandConfig = {
   },
 
   sectionTitles: {
-    featured: "Top Travel Destinations",
+    featured: "Top Asian Destinations",
     benefits: "Travel planning that keeps your schedule on track",
-    testimonials: "Travelers who prefer a smoother plan",
-    cta: "Ready to plan your next premium trip",
+    testimonials: "Travelers who love Asian exploration",
+    cta: "Ready for your next unforgettable journey across Asia?",
     tripPlanner: "Book your next route",
     travelStories: "Traveler stories",
-    specialOffers: "Special offers",
-    recommended: "Trending picks",
+    specialOffers: "Handpicked Asian packages",
+    recommended: "Trending Asian picks",
   },
 
   splash: {
-    title: "TravelPro",
-    subtitle: "Your Journey Starts Here",
-    logo: "TP",
+    title: "TripGoAsia",
+    subtitle: "Curated Journeys Across Asia",
+    logo: "TGA",
     backgroundColor: "#1f2937",
-    accentColor: "#7c3aed",
+    accentColor: "#FF932C",
     animation: "slide",
   },
 
   metadata: {
-    title: "TravelPro | Premium Travel Planning",
-    description: "Book smarter with organized itineraries, premium destinations, and polished travel planning from TravelPro.",
+    title: "TripGoAsia | Curated Journeys Across Asia",
+    description: "Explore Asia with curated itineraries, local guides, and seamless booking with TripGoAsia.",
   },
 
   contact: {
-    email: "hello@travelpro.com",
-    phone: "+91 98765 12345",
+    email: "info@tripgoasia.com",
+    phone: "+66 2 123 4567",
   },
+
+  font: {
+    family: "Inter",
+  },
+  websiteModules: ["PACKAGE", "HOTEL", "TOUR", "TRANSFER", "FLIGHT", "VISA"],
+  recommendations: ["PACKAGE", "HOTEL", "TOUR"],
+  socialMediaConfig: [],
+  geo: {
+    country: "TH",
+    city: "Bangkok",
+    ip: null,
+  },
+  copyright: `© ${new Date().getFullYear()} TripGoAsia. All rights reserved.`,
 };

@@ -1,42 +1,120 @@
-import { useState } from "react";
-import { Alert, Linking, Pressable, StyleSheet, Text } from "react-native";
-
-import { apiFetch } from "../lib/apiClient";
+import React, { useState } from "react";
+import { Text, StyleSheet, Pressable, ActivityIndicator } from "react-native";
+import * as WebBrowser from "expo-web-browser";
+import { useRouter } from "expo-router";
+import { Colors } from "../constants/theme";
+import { useBrandConfig } from "../contexts/BrandConfigContext";
+import { useToast } from "./ui/Toast";
+import { createCheckoutApi } from "../lib/apiClient";
 
 interface PaymentButtonProps {
   tripId: string;
-  amount: number;
+  amount?: number;
+  currency?: string;
+  disabled?: boolean;
+  label?: string;
+  onPress?: () => void;
 }
 
-export default function PaymentButton({ tripId, amount }: PaymentButtonProps) {
+export function PaymentButton({
+  tripId,
+  amount,
+  currency = "USD",
+  disabled = false,
+  label,
+  onPress,
+}: PaymentButtonProps) {
+  const router = useRouter();
+  const { primaryColor, brandKey } = useBrandConfig();
+  const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
 
-  async function handlePay() {
+  const handleCheckout = async () => {
+    if (disabled || loading) return;
+    if (onPress) {
+      onPress();
+      return;
+    }
     setLoading(true);
-    try {
-      const checkout = await apiFetch<{ checkoutUrl?: string }>("/api/payments/checkout", {
-        method: "POST",
-        body: JSON.stringify({ tripId, amount }),
-      });
 
-      if (!checkout.checkoutUrl) throw new Error("The payment service did not return a checkout URL.");
-      await Linking.openURL(checkout.checkoutUrl);
-    } catch (error) {
-      Alert.alert("Payment unavailable", error instanceof Error ? error.message : "Please try again.");
+    try {
+      const response = await createCheckoutApi(
+        {
+          tripId,
+          amount: amount || 0,
+          currency,
+        },
+        brandKey
+      );
+
+      const checkoutUrl = response?.checkoutUrl;
+
+      if (!checkoutUrl) {
+        throw new Error("No checkout URL returned from payment service.");
+      }
+
+      showToast("Redirecting to checkout...", "info");
+
+      // External payment gateway (e.g. Stripe, Razorpay)
+      if (/^https?:\/\//i.test(checkoutUrl)) {
+        await WebBrowser.openBrowserAsync(checkoutUrl);
+      } else {
+        // Internal in-app route returned by backend (e.g. /trips/:id/payment-success?...)
+        router.push(checkoutUrl as any);
+      }
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error
+          ? err.message
+          : "Unable to initiate payment checkout.";
+      showToast(msg, "error");
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   return (
-    <Pressable disabled={loading} onPress={handlePay} style={[styles.button, loading && styles.disabled]}>
-      <Text style={styles.text}>{loading ? "Redirecting..." : `Pay $${amount}`}</Text>
+    <Pressable
+      onPress={handleCheckout}
+      disabled={disabled || loading}
+      style={[
+        styles.button,
+        { backgroundColor: primaryColor },
+        (disabled || loading) && styles.disabled,
+      ]}
+    >
+      {loading ? (
+        <ActivityIndicator color={Colors.white} size="small" />
+      ) : (
+        <Text style={styles.text}>
+          {label || `Proceed to Checkout ${amount ? `(${currency} ${amount})` : ""}`}
+        </Text>
+      )}
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  button: { alignItems: "center", borderRadius: 999, backgroundColor: "#E76F51", padding: 14 },
-  disabled: { opacity: 0.6 },
-  text: { color: "#FAF7ED", fontSize: 14, fontWeight: "700" },
+  button: {
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  disabled: {
+    opacity: 0.6,
+  },
+  text: {
+    color: Colors.white,
+    fontSize: 15,
+    fontWeight: "700",
+  },
 });
+
+export default PaymentButton;

@@ -1,40 +1,40 @@
 import { BrandConfig } from "./types";
 
 export const mytravelConfig: BrandConfig = {
-  name: "MyTravel",
-  logo: "MT",
+  name: "Technoheaven",
+  logo: "TH",
   visualStyle: "personal",
 
   colors: {
-    primary: "#059669",
-    secondary: "#14B8A6",
-    background: "#F0FDF4",
+    primary: "#00aacf",
+    secondary: "#0088a6",
+    background: "#F8FAFC",
     surface: "#FFFFFF",
     text: "#0F172A",
     mutedText: "#475569",
-    accent: "#F59E0B",
+    accent: "#00aacf",
   },
 
   navigation: [
     { href: "/", label: "Home" },
-    { href: "/trips", label: "My Trips" },
-    { href: "/trips/create", label: "Plan a Trip" },
-    { href: "/destinations", label: "Discover" },
+    { href: "/destinations", label: "Inventory" },
+    { href: "/trips", label: "Bookings" },
+    { href: "/about", label: "Technology" },
     { href: "/contact", label: "Contact" },
   ],
 
   hero: {
-    badge: "Personalized travel planner",
-    title: "Plan your next escape.",
-    subtitle: "Trips picked around your pace, preferences, and the moments you want to remember most.",
-    primaryCtaLabel: "Build My Trip",
-    secondaryCtaLabel: "Saved Ideas",
-    primaryCtaHref: "/trips/create",
-    secondaryCtaHref: "/destinations",
+    badge: "Global B2B Travel Platform & Technology",
+    title: "Powering Global Travel Distribution.",
+    subtitle: "Advanced booking engines connecting wholesale hotel inventory, global flight feeds, and real-time XML/API solutions for travel professionals.",
+    primaryCtaLabel: "Search Inventory",
+    secondaryCtaLabel: "Plan a Trip",
+    primaryCtaHref: "/destinations",
+    secondaryCtaHref: "/trips/create",
   },
 
   features: {
-    showStats: false,
+    showStats: true,
     showBenefits: true,
     showDestinations: true,
     showTestimonials: true,
@@ -46,32 +46,52 @@ export const mytravelConfig: BrandConfig = {
   },
 
   sectionTitles: {
-    featured: "Recommended For You",
-    benefits: "Personal travel planning built around your pace",
-    testimonials: "Travelers who like their plans personal",
-    cta: "Let’s design your next memorable trip",
-    tripPlanner: "Build your ideal getaway",
-    travelStories: "Memory-making journeys",
-    specialOffers: "Seasonal ideas",
-    recommended: "Suggested for you",
+    featured: "Global Hub Destinations",
+    benefits: "B2B travel technology built for speed & scale",
+    testimonials: "Trusted by travel partners worldwide",
+    cta: "Connect your business with global travel inventory",
+    tripPlanner: "Build your corporate itinerary",
+    travelStories: "Partner insights",
+    specialOffers: "Wholesale packages",
+    recommended: "Top performing markets",
   },
 
   splash: {
-    title: "MyTravel",
-    subtitle: "Your Trip. Your Way.",
-    logo: "MT",
-    backgroundColor: "#0f172a",
-    accentColor: "#14b8a6",
+    title: "Technoheaven",
+    subtitle: "Global B2B Travel Technology",
+    logo: "TH",
+    backgroundColor: "#090d16",
+    accentColor: "#00aacf",
     animation: "fade",
   },
 
   metadata: {
-    title: "MyTravel | Personalized Trips & Flexible Getaways",
-    description: "Build your perfect trip with flexible planning, curated ideas, and personalized travel experiences from MyTravel.",
+    title: "Technoheaven | Global B2B Travel Platform & Technology",
+    description: "Leading B2B travel software and wholesale inventory distribution platform for agencies, tour operators, and DMC partners.",
   },
 
   contact: {
-    email: "hello@mytravel.com",
-    phone: "+91 98765 67890",
+    email: "contact@technoheaven.com",
+    phone: "+971 4 123 4567",
   },
+
+  font: {
+    family: "Plus Jakarta Sans",
+  },
+  websiteModules: [
+    "HOTEL",
+    "FLIGHT",
+    "PACKAGE",
+    "TRANSFER",
+    "TOUR",
+    "VISA",
+  ],
+  recommendations: ["HOTEL", "FLIGHT", "PACKAGE"],
+  socialMediaConfig: [],
+  geo: {
+    country: "AE",
+    city: "Dubai",
+    ip: null,
+  },
+  copyright: `© ${new Date().getFullYear()} Technoheaven. All rights reserved.`,
 };

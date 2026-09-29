@@ -6,7 +6,8 @@ public sealed class BrandContext
     {
         "wanderly",
         "travelpro",
-        "mytravel"
+        "mytravel",
+        "techno-b2b"
     };
 
     private readonly CurrentUserContext _currentUserContext;

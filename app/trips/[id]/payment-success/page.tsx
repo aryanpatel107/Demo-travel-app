@@ -1,11 +1,16 @@
 "use client";
 
-import { useMemo } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useEffect, useMemo } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
+import { useToast } from "@/components/ui/Toast";
 
 export default function PaymentSuccessPage() {
+  const params = useParams<{ id: string }>();
   const searchParams = useSearchParams();
   const router = useRouter();
+  const isAuthReady = useRequireAuth();
+  const { showToast } = useToast();
 
   const paymentId = searchParams.get("paymentId");
   const status = searchParams.get("status") ?? "success";
@@ -15,6 +20,25 @@ export default function PaymentSuccessPage() {
     if (status === "failed") return "failed";
     return "success";
   }, [status]);
+
+  // Reflect the outcome as a toast too, matching how every other action
+  // in the app (add to cart, cancel booking, etc.) gives feedback.
+  useEffect(() => {
+    if (!isAuthReady) return;
+
+    if (paymentState === "success") {
+      showToast("Payment completed successfully.", "success");
+    } else if (paymentState === "failed") {
+      showToast("Payment could not be completed.", "error");
+    } else {
+      showToast("Payment was cancelled.", "info");
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }
+  }, [isAuthReady, paymentState]);
+
+  if (!isAuthReady) {
+    return null;
+  }
 
   const heading =
     paymentState === "cancelled"
@@ -77,7 +101,11 @@ export default function PaymentSuccessPage() {
 
           {(paymentState === "cancelled" || paymentState === "failed") && (
             <button
-              onClick={() => router.push("/trips/create")}
+              // Fixed: this used to route to /trips/create, which starts
+              // an entirely new trip. Retrying payment should return to
+              // THIS trip's cart, where the existing items are still
+              // there and payment can be attempted again.
+              onClick={() => router.push(`/trips/${params.id}`)}
               className="rounded-full border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
             >
               Retry payment

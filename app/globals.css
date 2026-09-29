@@ -209,11 +209,12 @@
   }
 
   .brand-splash {
-    animation: splashFade 1.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    will-change: opacity, transform;
   }
 
   .brand-splash__content {
-    animation: splashReveal 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: splashReveal 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    will-change: transform, opacity;
   }
 
   .animate-reveal {
@@ -248,7 +249,7 @@
     max-width: 80rem;
     align-items: center;
     justify-content: space-between;
-    gap: 0.75rem;
+    gap: 1.5rem;
     width: 100%;
     min-width: 0;
     padding-inline: 1rem;
@@ -261,7 +262,7 @@
     gap: 0.75rem;
     white-space: nowrap;
     min-width: 0;
-    flex-shrink: 1;
+    flex-shrink: 0;
     transition: opacity 180ms ease;
   }
 
@@ -292,9 +293,8 @@
   .desktop-nav {
     display: none;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 1.5rem;
-    flex: 1;
   }
 
   .nav-link {
@@ -568,7 +568,7 @@
     --wanderly-white: #ffffff;
     background: var(--wanderly-paper);
     color: var(--wanderly-ink);
-    font-family: var(--font-body), system-ui, sans-serif;
+    font-family: var(--brand-font-family, var(--font-body), system-ui, sans-serif);
   }
 
   .wanderly-page .wanderly-hero {
@@ -1182,12 +1182,59 @@
 @keyframes splashReveal {
   0% {
     opacity: 0;
-    transform: translateY(14px) scale(0.96);
+    transform: translateY(16px) scale(0.97);
   }
   100% {
     opacity: 1;
     transform: translateY(0) scale(1);
   }
+}
+
+@keyframes spinSlow {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes travelAuraPulse {
+  0%, 100% {
+    opacity: 0.35;
+    transform: scale(0.95);
+  }
+  50% {
+    opacity: 0.65;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes travelProgressBar {
+  0% {
+    width: 6%;
+  }
+  35% {
+    width: 58%;
+  }
+  85% {
+    width: 90%;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+.animate-spin-slow {
+  animation: spinSlow 20s linear infinite;
+}
+
+.animate-aura-pulse {
+  animation: travelAuraPulse 3.5s ease-in-out infinite;
+}
+
+.animate-travel-progress {
+  animation: travelProgressBar 1.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
 
 @keyframes fadeUp {

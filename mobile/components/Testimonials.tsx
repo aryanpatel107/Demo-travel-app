@@ -1,4 +1,7 @@
+import React from "react";
 import { View, Text, StyleSheet } from "react-native";
+import { useAppConfig } from "@/contexts/BrandConfigContext";
+import { theme } from "@/constants/theme";
 
 const testimonials = [
   {
@@ -15,112 +18,83 @@ const testimonials = [
   },
   {
     quote:
-      "Patagonia was the trip of a lifetime. Wanderly's destination notes were more useful than any guidebook.",
+      "Patagonia was the trip of a lifetime. The destination notes were more useful than any guidebook.",
     name: "T. Osei",
     location: "Accra, Ghana",
   },
 ];
 
 export default function Testimonials() {
+  const { branding } = useAppConfig();
+  const websiteName = branding.name?.trim() || "";
+
   return (
-    <View style={styles.section}>
-      <View style={styles.container}>
-        {/* Section Label */}
-        <Text style={styles.label}>
-          Postcards from travelers
-        </Text>
+    <View style={styles.container}>
+      <Text style={styles.kicker}>POSTCARDS FROM TRAVELERS</Text>
+      <Text style={styles.title}>
+        {websiteName ? `What travelers say about ${websiteName}` : "What travelers say"}
+      </Text>
 
-        {/* Heading */}
-        <Text style={styles.heading}>
-          Trusted by wanderers everywhere
-        </Text>
-
-        {/* Testimonials */}
-        <View style={styles.testimonialsContainer}>
-          {testimonials.map((testimonial) => (
-            <View
-              key={testimonial.name}
-              style={styles.testimonialCard}
-            >
-              <Text style={styles.quote}>
-                “{testimonial.quote}”
+      <View style={styles.list}>
+        {testimonials.map((t) => (
+          <View key={t.name} style={styles.card}>
+            <Text style={styles.quote}>&ldquo;{t.quote}&rdquo;</Text>
+            <View style={styles.authorRow}>
+              <Text style={styles.authorText}>
+                {t.name} · {t.location}
               </Text>
-
-              <View style={styles.authorContainer}>
-                <Text style={styles.author}>
-                  {testimonial.name} · {testimonial.location}
-                </Text>
-              </View>
             </View>
-          ))}
-        </View>
+          </View>
+        ))}
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  section: {
-    width: "100%",
-    backgroundColor: "#0F4C4C",
-    paddingVertical: 80,
-  },
-
   container: {
-    width: "100%",
-    maxWidth: 1152,
-    alignSelf: "center",
-    paddingHorizontal: 24,
+    backgroundColor: theme.colors.ink,
+    paddingHorizontal: 20,
+    paddingVertical: 36,
   },
-
-  label: {
-    fontSize: 12,
-    textTransform: "uppercase",
+  kicker: {
+    fontSize: 10,
     letterSpacing: 2,
-    color: "#D4AF37",
-    fontFamily: "monospace",
+    fontWeight: "800",
+    color: theme.colors.gold,
+    marginBottom: 8,
+    textTransform: "uppercase",
   },
-
-  heading: {
-    marginTop: 8,
-    fontSize: 30,
-    lineHeight: 38,
-    fontWeight: "600",
-    color: "#FAF7ED",
+  title: {
+    fontSize: 26,
+    fontWeight: "800",
+    color: theme.colors.sand,
+    marginBottom: 24,
   },
-
-  testimonialsContainer: {
-    marginTop: 48,
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-    gap: 24,
+  list: {
+    gap: 16,
   },
-
-  testimonialCard: {
-    width: "100%",
-    borderRadius: 16,
-    backgroundColor: "#FAF7ED",
-    padding: 24,
+  card: {
+    backgroundColor: theme.colors.sand,
+    borderRadius: 20,
+    padding: 20,
   },
-
   quote: {
     fontSize: 14,
     lineHeight: 22,
-    color: "rgba(31, 41, 55, 0.8)",
+    color: theme.colors.ink,
+    marginBottom: 16,
+    fontStyle: "italic",
   },
-
-  authorContainer: {
-    marginTop: 20,
-    paddingTop: 12,
+  authorRow: {
     borderTopWidth: 1,
     borderStyle: "dashed",
-    borderTopColor: "#E5E7EB",
+    borderColor: "#cbd5e1",
+    paddingTop: 10,
   },
-
-  author: {
-    fontSize: 12,
-    color: "rgba(31, 41, 55, 0.5)",
+  authorText: {
+    fontSize: 11,
     fontFamily: "monospace",
+    color: "#64748b",
   },
 });

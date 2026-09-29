@@ -1,101 +1,138 @@
-import { View, Text, StyleSheet, Pressable, ScrollView } from "react-native";
-import { useRouter, usePathname } from "expo-router";
-
-const links = [
-  { href: "/", label: "Home" },
-  { href: "/destinations", label: "Destinations" },
-  { href: "/trips", label: "Trips" },
-  { href: "/about", label: "About" },
-  { href: "/contact", label: "Contact" },
-];
+import React from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  ActivityIndicator,
+} from "react-native";
+import { useRouter } from "expo-router";
+import { useBrandConfig } from "@/contexts/BrandConfigContext";
+import { useAuth } from "@/contexts/AuthContext";
+import BrandLogo from "@/components/BrandLogo";
 
 export default function Navbar() {
   const router = useRouter();
-  const pathname = usePathname();
+  const { branding, brandKey } = useBrandConfig();
+  const { user, isAuthenticated, logout, loading: authLoading } = useAuth();
+
+  const primaryColor = branding.primaryColor || "#2882c5";
+  const brandName = branding.name || "Travel App";
 
   return (
-    <View style={styles.header}>
-      <Pressable style={styles.logo} onPress={() => router.push("/")}>
-        <View style={styles.logoBadge}>
-          <Text style={styles.logoIcon}>✈</Text>
-        </View>
-        <Text style={styles.logoText}>Wanderly</Text>
+    <View style={styles.container}>
+      {/* Brand Logo */}
+      <Pressable
+        style={styles.brandRow}
+        onPress={() => router.push("/" as never)}
+      >
+        <BrandLogo
+          logoUrl={branding.logoUrl}
+          brandName={brandName}
+          brandKey={brandKey}
+          primaryColor={primaryColor}
+          secondaryColor={branding.secondaryColor}
+          height={34}
+        />
       </Pressable>
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.linksRow}
-      >
-        {links.map((link) => {
-          const active = pathname === link.href;
-          return (
+      {/* Auth Status for current brand only */}
+      <View style={styles.authRow}>
+        {authLoading ? (
+          <ActivityIndicator size="small" color={primaryColor} />
+        ) : isAuthenticated && user ? (
+          <View style={styles.userContainer}>
+            <Text style={styles.userGreeting} numberOfLines={1}>
+              Hi, {user?.name?.trim() ? user.name.trim().split(" ")[0] : "User"}
+            </Text>
             <Pressable
-              key={link.href}
-              onPress={() => router.push(link.href)}
-              style={styles.linkItem}
+              onPress={() => void logout()}
+              style={({ pressed }) => [
+                styles.logoutBtn,
+                pressed && styles.pressed,
+              ]}
             >
-              <Text style={[styles.linkText, active && styles.linkActive]}>
-                {link.label}
-              </Text>
+              <Text style={styles.logoutBtnText}>Logout</Text>
             </Pressable>
-          );
-        })}
-      </ScrollView>
+          </View>
+        ) : (
+          <Pressable
+            onPress={() => router.push("/login" as never)}
+            style={({ pressed }) => [
+              styles.loginBtn,
+              { backgroundColor: primaryColor },
+              pressed && styles.pressed,
+            ]}
+          >
+            <Text style={styles.loginBtnText}>Login</Text>
+          </Pressable>
+        )}
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  header: {
+  container: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: "#FFFFFF",
     borderBottomWidth: 1,
-    borderBottomColor: "rgba(212, 175, 55, 0.3)",
-    backgroundColor: "#FAF7ED",
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 12,
+    borderBottomColor: "#E2E8F0",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
   },
-  logo: {
+  brandRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    flexShrink: 1,
+  },
+  authRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  userContainer: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    marginBottom: 10,
   },
-  logoBadge: {
-    height: 32,
-    width: 32,
-    borderRadius: 16,
-    backgroundColor: "#0F766E",
-    alignItems: "center",
-    justifyContent: "center",
+  userGreeting: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#334155",
+    maxWidth: 90,
   },
-  logoIcon: {
-    color: "#FAF7ED",
-    fontSize: 14,
+  logoutBtn: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 6,
+    backgroundColor: "#F1F5F9",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
   },
-  logoText: {
-    fontSize: 20,
-    fontWeight: "600",
-    color: "#1F2937",
-  },
-  linksRow: {
-    flexDirection: "row",
-    gap: 24,
-  },
-  linkItem: {
-    paddingBottom: 4,
-    borderBottomWidth: 1,
-    borderBottomColor: "transparent",
-  },
-  linkText: {
+  logoutBtnText: {
     fontSize: 11,
-    textTransform: "uppercase",
-    letterSpacing: 1.5,
-    color: "rgba(31, 41, 55, 0.7)",
-    fontFamily: "monospace",
+    fontWeight: "600",
+    color: "#64748B",
   },
-  linkActive: {
-    color: "#1F2937",
-    borderBottomColor: "#E76F51",
+  loginBtn: {
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  loginBtnText: {
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontWeight: "700",
+  },
+  pressed: {
+    opacity: 0.7,
   },
 });

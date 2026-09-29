@@ -1,5 +1,7 @@
+"use client";
+
 import Link from "next/link";
-import { config } from "@/config";
+import { useAppConfig } from "@/components/RemoteConfigProvider";
 
 interface BrandStateProps {
   title: string;
@@ -18,7 +20,11 @@ export function BrandStateCard({
   onAction,
   tone = "empty",
 }: BrandStateProps) {
-  const brandKey = config.name.toLowerCase().replace(/\s+/g, "");
+  const { branding } = useAppConfig();
+
+  const brandName = branding.name?.trim() || "";
+  const brandKey = brandName.toLowerCase().replace(/\s+/g, "");
+
   const isWanderly = brandKey === "wanderly";
   const isTravelPro = brandKey === "travelpro";
 
@@ -55,11 +61,14 @@ export function BrandStateCard({
       aria-live="polite"
       role={tone === "error" ? "alert" : "status"}
     >
-      <div className={`mx-auto flex h-14 w-14 items-center justify-center rounded-full text-2xl ${iconClasses}`}>
+      <div
+        className={`mx-auto flex h-14 w-14 items-center justify-center rounded-full text-2xl ${iconClasses}`}
+      >
         {tone === "error" ? "⚠" : "✦"}
       </div>
 
       <h2 className="mt-5 text-2xl font-bold tracking-tight">{title}</h2>
+
       <p className="mt-3 text-sm leading-7 opacity-80">{description}</p>
 
       {actionLabel && (
