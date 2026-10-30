@@ -8,6 +8,7 @@ import {
   ScrollView,
   ActivityIndicator,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAppConfig } from "@/contexts/BrandConfigContext";
 import { useToast } from "@/components/ui/Toast";
 import { sendContactMessageApi } from "@/lib/apiClient";
@@ -15,6 +16,7 @@ import Footer from "@/components/Footer";
 import { theme } from "@/constants/theme";
 
 export default function ContactScreen() {
+  const insets = useSafeAreaInsets();
   const { branding, primaryColor, brandKey } = useAppConfig();
   const { showToast } = useToast();
   const brandName = branding.name || "Wanderly";
@@ -56,7 +58,13 @@ export default function ContactScreen() {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={[
+        styles.content,
+        { paddingBottom: Math.max(insets.bottom, 24) + 16 },
+      ]}
+    >
       <View style={styles.card}>
         <Text style={[styles.kicker, { color: primary }]}>GET IN TOUCH</Text>
         <View>

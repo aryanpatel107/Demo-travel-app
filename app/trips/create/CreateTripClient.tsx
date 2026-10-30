@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { destinations } from "@/data/destinations";
-import { apiFetch } from "@/lib/apiClient";
+import { apiFetch, getDestinations, type Destination } from "@/lib/apiClient";
 
 type TripResponse = {
   id: string;
@@ -41,6 +40,19 @@ export default function CreateTripClient() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [destinationsList, setDestinationsList] = useState<Destination[]>([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    getDestinations()
+      .then((data) => {
+        if (isMounted) setDestinationsList(data);
+      })
+      .catch((err) => console.error("Failed to fetch destinations:", err));
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -49,7 +61,7 @@ export default function CreateTripClient() {
     setLoading(true);
 
     try {
-      const selectedDestination = destinations.find(
+      const selectedDestination = destinationsList.find(
         (destination) => destination.id === destinationId
       );
 
@@ -127,7 +139,7 @@ export default function CreateTripClient() {
                 Select a destination
               </option>
 
-              {destinations.map((d) => (
+              {destinationsList.map((d) => (
                 <option key={d.id} value={d.id}>
                   {d.name}, {d.country}
                 </option>

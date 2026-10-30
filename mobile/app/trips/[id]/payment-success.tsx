@@ -1,11 +1,13 @@
 import React, { useEffect } from "react";
 import { View, Text, StyleSheet, Pressable } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useToast } from "@/components/ui/Toast";
 import { theme } from "@/constants/theme";
 
 export default function PaymentSuccessPage() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{
     id: string;
     paymentId?: string;
@@ -43,7 +45,15 @@ export default function PaymentSuccessPage() {
     : "Your payment has been completed successfully. Your booking is confirmed!";
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        {
+          paddingTop: Math.max(insets.top, 20) + 10,
+          paddingBottom: Math.max(insets.bottom, 20) + 10,
+        },
+      ]}
+    >
       <View
         style={[
           styles.card,

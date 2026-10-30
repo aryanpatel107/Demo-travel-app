@@ -16,9 +16,11 @@ import {
   type BrandKey,
 } from "../config";
 import { getStoredToken } from "./authStorage";
+import type { Destination, WishlistItem } from "../types/destination";
 
 // Re-export getApiBaseUrl and getAppApiBaseUrl so callers can import from apiClient
 export { getApiBaseUrl, getAppApiBaseUrl };
+export type { Destination, WishlistItem };
 
 /* -------------------------------------------------------------------------- */
 /* Types & Error                                                              */
@@ -363,3 +365,67 @@ export async function sendContactMessage<T = unknown>(
   );
 }
 export const sendContactMessageApi = sendContactMessage;
+
+/* -------------------------------------------------------------------------- */
+/* Destinations                                                               */
+/* -------------------------------------------------------------------------- */
+
+export async function getDestinations(
+  params?: { search?: string; tag?: string },
+  brandKey?: BrandKey
+): Promise<Destination[]> {
+  const queryParts: string[] = [];
+  if (params?.search) queryParts.push(`search=${encodeURIComponent(params.search)}`);
+  if (params?.tag) queryParts.push(`tag=${encodeURIComponent(params.tag)}`);
+  const qs = queryParts.length > 0 ? `?${queryParts.join("&")}` : "";
+  return apiFetch<Destination[]>(`/api/destinations${qs}`, { method: "GET" }, brandKey);
+}
+export const getDestinationsApi = getDestinations;
+
+export async function getDestination(
+  id: string,
+  brandKey?: BrandKey
+): Promise<Destination> {
+  return apiFetch<Destination>(
+    `/api/destinations/${encodeURIComponent(id)}`,
+    { method: "GET" },
+    brandKey
+  );
+}
+export const getDestinationApi = getDestination;
+
+/* -------------------------------------------------------------------------- */
+/* Wishlist                                                                   */
+/* -------------------------------------------------------------------------- */
+
+export async function getWishlist(
+  brandKey?: BrandKey
+): Promise<WishlistItem[]> {
+  return apiFetch<WishlistItem[]>("/api/wishlist", { method: "GET" }, brandKey);
+}
+export const getWishlistApi = getWishlist;
+
+export async function addToWishlist(
+  destinationId: string,
+  brandKey?: BrandKey
+): Promise<WishlistItem> {
+  return apiFetch<WishlistItem>(
+    `/api/wishlist/${encodeURIComponent(destinationId)}`,
+    { method: "POST" },
+    brandKey
+  );
+}
+export const addToWishlistApi = addToWishlist;
+
+export async function removeFromWishlist(
+  destinationId: string,
+  brandKey?: BrandKey
+): Promise<{ success: boolean; destinationId: string; message: string }> {
+  return apiFetch<{ success: boolean; destinationId: string; message: string }>(
+    `/api/wishlist/${encodeURIComponent(destinationId)}`,
+    { method: "DELETE" },
+    brandKey
+  );
+}
+export const removeFromWishlistApi = removeFromWishlist;
+

@@ -1,18 +1,35 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, Pressable } from "react-native";
 import { useRouter } from "expo-router";
 import { useAppConfig } from "@/contexts/BrandConfigContext";
 import DestinationGrid from "@/components/DestinationGrid";
 import Testimonials from "@/components/Testimonials";
 import CTASection from "@/components/CTASection";
-import { destinations } from "@/data/destinations";
+import { getDestinations } from "@/lib/apiClient";
+import type { Destination } from "@/types/destination";
 import { theme } from "@/constants/theme";
-
-const featured = destinations.slice(0, 3);
 
 export default function MyTravelHome() {
   const router = useRouter();
-  const { branding, primaryColor, config } = useAppConfig();
+  const { branding, primaryColor, config, brandKey } = useAppConfig();
+  const [destinationsList, setDestinationsList] = useState<Destination[]>([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    (async () => {
+      try {
+        const data = await getDestinations(undefined, brandKey);
+        if (isMounted) setDestinationsList(data);
+      } catch (err) {
+        console.error("[MyTravelHome] Failed to load destinations:", err);
+      }
+    })();
+    return () => {
+      isMounted = false;
+    };
+  }, [brandKey]);
+
+  const featured = destinationsList.slice(0, 3);
 
   const brandName = branding.name || "Technoheaven";
   const kicker = brandName.toUpperCase();

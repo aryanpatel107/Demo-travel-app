@@ -18,6 +18,7 @@ export interface ActiveWebsiteIdentity {
   displayName: string;
   fullName: string;
   tagline: string;
+  
   defaultHostname: string;
   defaultPrimaryColor: string;
   defaultAccentColor: string;

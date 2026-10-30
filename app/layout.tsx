@@ -53,6 +53,8 @@ async function detectRequestedHostname(): Promise<SupportedHostname> {
   }
 }
 
+import { WishlistProvider } from "@/components/wishlist/WishlistProvider";
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -73,15 +75,17 @@ export default async function RootLayout({
         >
           <ToastProvider>
             <AuthProvider>
-              <BrandStartup />
+              <WishlistProvider>
+                <BrandStartup />
 
-              <Navbar />
+                <Navbar />
 
-              <main className="flex-1">
-                {children}
-              </main>
+                <main className="flex-1">
+                  {children}
+                </main>
 
-              <Footer />
+                <Footer />
+              </WishlistProvider>
             </AuthProvider>
           </ToastProvider>
         </RemoteConfigProvider>

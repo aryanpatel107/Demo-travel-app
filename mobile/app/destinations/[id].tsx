@@ -1,31 +1,92 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   Pressable,
+  ActivityIndicator,
 } from "react-native";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { getDestinationById } from "@/data/destinations";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import { getDestination, type Destination } from "@/lib/apiClient";
 import { ReviewsSection } from "@/components/reviews/ReviewsSection";
-import { useAppConfig } from "@/contexts/BrandConfigContext";
+import { useBrandConfig } from "@/contexts/BrandConfigContext";
+import { useWishlist } from "@/contexts/WishlistContext";
 import Footer from "@/components/Footer";
 import { theme } from "@/constants/theme";
 
 export default function DestinationDetailScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { branding, primaryColor } = useAppConfig();
+  const { branding, primaryColor, brandKey } = useBrandConfig();
+  const { isWishlisted, toggleWishlist } = useWishlist();
 
-  const destination = getDestinationById(id);
+  const [destination, setDestination] = useState<Destination | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   const primary = primaryColor || theme.colors.teal;
   const brandName = branding.name || "Travel";
 
-  if (!destination) {
+  useEffect(() => {
+    if (!id) return;
+    let isMounted = true;
+    setLoading(true);
+    setError(null);
+
+    getDestination(id, brandKey)
+      .then((data) => {
+        if (isMounted) {
+          setDestination(data);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to load destination detail:", err);
+        if (isMounted) {
+          setError(err instanceof Error ? err.message : "Destination not found.");
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [id, brandKey]);
+
+  const wishlisted = destination ? isWishlisted(destination.id) : false;
+
+  if (loading) {
     return (
-      <View style={styles.notFoundContainer}>
+      <View
+        style={[
+          styles.loadingContainer,
+          { paddingTop: Math.max(insets.top, 24) + 40 },
+        ]}
+      >
+        <ActivityIndicator size="large" color={primary} />
+        <Text style={[styles.loadingText, { color: primary }]}>
+          Loading {brandName} destination...
+        </Text>
+      </View>
+    );
+  }
+
+  if (error || !destination) {
+    return (
+      <View
+        style={[
+          styles.notFoundContainer,
+          {
+            paddingTop: Math.max(insets.top, 24) + 20,
+            paddingBottom: Math.max(insets.bottom, 24) + 20,
+          },
+        ]}
+      >
         <Text style={styles.notFoundTitle}>Destination not found</Text>
         <Text style={styles.notFoundSub}>
           The destination you are looking for does not exist.
@@ -45,10 +106,16 @@ export default function DestinationDetailScreen() {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={[
+        styles.content,
+        { paddingBottom: Math.max(insets.bottom, 24) + 16 },
+      ]}
+    >
       {/* Top back link */}
       <Pressable
-        style={styles.backRow}
+        style={[styles.backRow, { paddingTop: Math.max(insets.top, 16) + 4 }]}
         onPress={() => router.back()}
       >
         <Text style={[styles.backText, { color: primary }]}>
@@ -65,6 +132,20 @@ export default function DestinationDetailScreen() {
             contentFit="cover"
             transition={300}
           />
+          <Pressable
+            style={({ pressed }) => [
+              styles.detailHeartBtn,
+              pressed && { transform: [{ scale: 0.92 }] },
+            ]}
+            hitSlop={12}
+            onPress={() => toggleWishlist(destination.id)}
+          >
+            <Ionicons
+              name={wishlisted ? "heart" : "heart-outline"}
+              size={22}
+              color={wishlisted ? primary : "#475569"}
+            />
+          </Pressable>
           <View style={styles.pricePill}>
             <Text style={styles.pricePillText}>${destination.price}</Text>
           </View>
@@ -311,5 +392,29 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     fontWeight: "700",
     fontSize: 14,
+  },
+  detailHeartBtn: {
+    position: "absolute",
+    top: 14,
+    left: 14,
+    backgroundColor: "rgba(255, 255, 255, 0.94)",
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 10,
+    ...theme.shadows.md,
+  },
+  loadingContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 12,
+    backgroundColor: "#ffffff",
+  },
+  loadingText: {
+    fontSize: 14,
+    fontWeight: "600",
   },
 });

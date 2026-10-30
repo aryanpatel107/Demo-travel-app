@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useAppConfig } from "@/components/RemoteConfigProvider";
+import { useWishlist } from "@/components/wishlist/WishlistProvider";
 
 interface NavItem {
   href: string;
@@ -44,6 +45,7 @@ export default function Navbar() {
     contacts,
     primaryColor,
   } = useAppConfig();
+  const { wishlistCount } = useWishlist();
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [currencyOpen, setCurrencyOpen] = useState(false);
@@ -365,6 +367,43 @@ export default function Navbar() {
               </span>
             </Link>
 
+            {/* Wishlist Link with count badge (when logged in) */}
+            {mounted && user && (
+              <Link
+                href="/wishlist"
+                id="navbar-wishlist-link"
+                className={`relative flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs sm:text-sm font-semibold transition-all ${
+                  isActiveLink("/wishlist")
+                    ? "bg-slate-100 text-slate-900"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                }`}
+                title="My Wishlist"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  className="h-4 w-4"
+                  fill={wishlistCount > 0 ? resolvedPrimary : "none"}
+                  stroke={wishlistCount > 0 ? resolvedPrimary : "currentColor"}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+                </svg>
+                <span className="hidden sm:inline">Wishlist</span>
+                {wishlistCount > 0 && (
+                  <span
+                    id="wishlist-badge-count"
+                    className="flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[10px] font-bold text-white"
+                    style={{ backgroundColor: resolvedPrimary }}
+                  >
+                    {wishlistCount}
+                  </span>
+                )}
+              </Link>
+            )}
+
             {/* Login / Auth Button (Desktop: visible md+) */}
             <div className="hidden md:flex items-center">
               {!mounted ? (
@@ -485,6 +524,33 @@ export default function Navbar() {
                   <div className="px-3 py-1 text-xs text-slate-500 font-medium">
                     Signed in as <span className="font-bold text-slate-800">{user.name}</span>
                   </div>
+                  <Link
+                    href="/wishlist"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex min-h-11 items-center justify-between rounded-xl px-3.5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                  >
+                    <span className="flex items-center gap-2">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        className="h-4 w-4"
+                        fill={wishlistCount > 0 ? resolvedPrimary : "none"}
+                        stroke={wishlistCount > 0 ? resolvedPrimary : "currentColor"}
+                        strokeWidth="2"
+                      >
+                        <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+                      </svg>
+                      My Wishlist
+                    </span>
+                    {wishlistCount > 0 && (
+                      <span
+                        className="flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-xs font-bold text-white"
+                        style={{ backgroundColor: resolvedPrimary }}
+                      >
+                        {wishlistCount}
+                      </span>
+                    )}
+                  </Link>
                   <button
                     type="button"
                     onClick={async () => {

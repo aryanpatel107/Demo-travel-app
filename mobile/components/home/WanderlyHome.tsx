@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, Pressable, TextInput, ScrollView } from "react-native";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
@@ -8,14 +8,31 @@ import WhyWanderly from "@/components/WhyWanderly";
 import DestinationGrid from "@/components/DestinationGrid";
 import Testimonials from "@/components/Testimonials";
 import CTASection from "@/components/CTASection";
-import { destinations } from "@/data/destinations";
+import { getDestinations } from "@/lib/apiClient";
+import type { Destination } from "@/types/destination";
 import { theme } from "@/constants/theme";
-
-const featured = destinations.slice(0, 3);
 
 export default function WanderlyHome() {
   const router = useRouter();
-  const { branding, primaryColor, secondaryColor, config } = useAppConfig();
+  const { branding, primaryColor, secondaryColor, config, brandKey } = useAppConfig();
+  const [destinationsList, setDestinationsList] = useState<Destination[]>([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    (async () => {
+      try {
+        const data = await getDestinations(undefined, brandKey);
+        if (isMounted) setDestinationsList(data);
+      } catch (err) {
+        console.error("[WanderlyHome] Failed to load destinations:", err);
+      }
+    })();
+    return () => {
+      isMounted = false;
+    };
+  }, [brandKey]);
+
+  const featured = destinationsList.slice(0, 3);
 
   const brandName = branding.name || "GujjuTours";
   const kicker = brandName.toUpperCase();

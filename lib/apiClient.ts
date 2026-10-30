@@ -1,6 +1,9 @@
 
 import type { RemoteConfigResult } from "@/types/remoteConfig";
+import type { Destination, WishlistItem } from "@/types/destination";
 import { resolveCurrentHostname } from "@/config";
+
+export type { Destination, WishlistItem };
 
 /* -------------------------------------------------------------------------- */
 /* Application API                                                            */
@@ -900,4 +903,64 @@ export async function sendContactMessage<T = unknown>(
     }
   );
 }
+
+/* -------------------------------------------------------------------------- */
+/* Destinations                                                               */
+/* -------------------------------------------------------------------------- */
+
+export async function getDestinations(params?: {
+  search?: string;
+  tag?: string;
+}): Promise<Destination[]> {
+  const query = new URLSearchParams();
+  if (params?.search) query.set("search", params.search);
+  if (params?.tag) query.set("tag", params.tag);
+  const qs = query.toString();
+  const path = qs ? `/api/destinations?${qs}` : "/api/destinations";
+  return apiFetch<Destination[]>(path, {
+    method: "GET",
+    cache: "no-store",
+  });
+}
+
+export async function getDestination(id: string): Promise<Destination> {
+  return apiFetch<Destination>(`/api/destinations/${encodeURIComponent(id)}`, {
+    method: "GET",
+    cache: "no-store",
+  });
+}
+
+/* -------------------------------------------------------------------------- */
+/* Wishlist                                                                   */
+/* -------------------------------------------------------------------------- */
+
+export async function getWishlist(): Promise<WishlistItem[]> {
+  return apiFetch<WishlistItem[]>("/api/wishlist", {
+    method: "GET",
+    cache: "no-store",
+  });
+}
+
+export async function addToWishlist(
+  destinationId: string
+): Promise<WishlistItem> {
+  return apiFetch<WishlistItem>(
+    `/api/wishlist/${encodeURIComponent(destinationId)}`,
+    {
+      method: "POST",
+    }
+  );
+}
+
+export async function removeFromWishlist(
+  destinationId: string
+): Promise<{ success: boolean; destinationId: string; message: string }> {
+  return apiFetch<{ success: boolean; destinationId: string; message: string }>(
+    `/api/wishlist/${encodeURIComponent(destinationId)}`,
+    {
+      method: "DELETE",
+    }
+  );
+}
+
 

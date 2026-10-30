@@ -7,6 +7,7 @@ import {
   Pressable,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useToast } from "@/components/ui/Toast";
 import { useAppConfig } from "@/contexts/BrandConfigContext";
 import { getTripApi, type TripItem as ApiTripItem } from "@/lib/apiClient";
@@ -33,6 +34,7 @@ const ITEM_ICONS: Record<TripItemType, string> = {
 
 export default function TripDetailPage() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { branding, primaryColor, brandKey } = useAppConfig();
   const { showToast } = useToast();
@@ -87,9 +89,18 @@ export default function TripDetailPage() {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={[
+        styles.content,
+        { paddingBottom: Math.max(insets.bottom, 24) + 16 },
+      ]}
+    >
       {/* Top back row */}
-      <Pressable style={styles.backRow} onPress={() => router.back()}>
+      <Pressable
+        style={[styles.backRow, { paddingTop: Math.max(insets.top, 16) + 4 }]}
+        onPress={() => router.back()}
+      >
         <Text style={[styles.backText, { color: primary }]}>← Back to My Trips</Text>
       </Pressable>
 

@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { memo } from "react";
 import { useAppConfig } from "@/components/RemoteConfigProvider";
+import { useWishlist } from "@/components/wishlist/WishlistProvider";
 import { Destination } from "@/types/destination";
 
 interface DestinationCardProps {
@@ -12,7 +13,9 @@ interface DestinationCardProps {
 }
 
 function DestinationCard({ destination, variant }: DestinationCardProps) {
-  const { branding } = useAppConfig();
+  const { branding, primaryColor } = useAppConfig();
+  const { isWishlisted, toggleWishlist } = useWishlist();
+  const wishlisted = isWishlisted(destination.id);
 
   const remoteBrandKey =
     branding.name?.trim().toLowerCase().replace(/\s+/g, "") || "";
@@ -22,8 +25,12 @@ function DestinationCard({ destination, variant }: DestinationCardProps) {
   const isWanderly = selectedVariant === "wanderly";
   const isTravelPro = selectedVariant === "travelpro";
 
+  const brandColor =
+    primaryColor ||
+    (isWanderly ? "#2882c5" : isTravelPro ? "#FF932C" : "#00aacf");
+
   const baseClassName = [
-    "group block overflow-hidden transition-all duration-300 ease-out",
+    "group block overflow-hidden transition-all duration-300 ease-out relative",
     isWanderly
       ? "rounded-[28px] border border-[#e8dfcf] bg-[#fffaf3] shadow-[0_25px_50px_rgba(22,36,31,0.12)] hover:-translate-y-1 hover:shadow-[0_30px_60px_rgba(22,36,31,0.16)]"
       : isTravelPro
@@ -98,6 +105,36 @@ function DestinationCard({ destination, variant }: DestinationCardProps) {
           className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
           unoptimized
         />
+
+        {/* Wishlist Heart Toggle */}
+        <button
+          type="button"
+          id={`wishlist-btn-${destination.id}`}
+          aria-label={
+            wishlisted
+              ? `Remove ${destination.name} from wishlist`
+              : `Add ${destination.name} to wishlist`
+          }
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleWishlist(destination.id);
+          }}
+          className="absolute left-3 top-3 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 shadow-md backdrop-blur-sm transition-transform duration-200 hover:scale-110 active:scale-90"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            className="h-5 w-5 transition-colors duration-200"
+            fill={wishlisted ? brandColor : "none"}
+            stroke={wishlisted ? brandColor : "#475569"}
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+          </svg>
+        </button>
 
         <span className={ratingClassName}>{destination.rating}</span>
       </div>

@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useBrandConfig } from "@/contexts/BrandConfigContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { loginApi } from "@/lib/apiClient";
@@ -20,6 +21,7 @@ import BrandLogo from "@/components/BrandLogo";
 
 export default function LoginScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { branding, brandKey } = useBrandConfig();
   const { login, isAuthenticated, user, logout } = useAuth();
 
@@ -73,7 +75,15 @@ export default function LoginScreen() {
   if (isAuthenticated && user) {
     const firstName = user.name?.trim() ? user.name.trim().split(" ")[0] : "Traveler";
     return (
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.container,
+          {
+            paddingTop: Math.max(insets.top, 24) + 20,
+            paddingBottom: Math.max(insets.bottom, 24) + 20,
+          },
+        ]}
+      >
         <View style={styles.card}>
           <Text style={styles.brandSubtitle}>Active Session</Text>
           <Text style={styles.cardTitle}>{brandName}</Text>
@@ -107,7 +117,16 @@ export default function LoginScreen() {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.keyboardContainer}
     >
-      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        contentContainerStyle={[
+          styles.container,
+          {
+            paddingTop: Math.max(insets.top, 24) + 16,
+            paddingBottom: Math.max(insets.bottom, 24) + 20,
+          },
+        ]}
+        keyboardShouldPersistTaps="handled"
+      >
         <View style={styles.card}>
           {/* Brand Header */}
           <View style={styles.brandHeader}>

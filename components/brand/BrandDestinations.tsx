@@ -2,13 +2,35 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { useAppConfig } from "@/components/RemoteConfigProvider";
-import { destinations } from "@/data/destinations";
-
-const featured = destinations.slice(0, 4);
+import { getDestinations, type Destination } from "@/lib/apiClient";
+import { Skeleton } from "@/components/ui/Skeleton";
 
 export default function BrandDestinations() {
   const { branding, brandKey } = useAppConfig();
+  const [destinationsList, setDestinationsList] = useState<Destination[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    getDestinations()
+      .then((data) => {
+        if (isMounted) {
+          setDestinationsList(data);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to load featured destinations:", err);
+        if (isMounted) setLoading(false);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const featured = destinationsList.slice(0, 4);
 
   const brandName = branding.name?.trim() || "";
   const normalizedBrandName = brandName.toLowerCase().replace(/\s+/g, "");

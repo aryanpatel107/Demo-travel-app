@@ -28,22 +28,19 @@
     "react-native-worklets": "0.10.1"
   },
   "devDependencies": {
+    "@expo/ngrok": "^4.1.3",
     "@types/react": "~19.2.2",
     "typescript": "~6.0.3"
   },
   "scripts": {
-    "detect-ip": "node scripts/detect-ip.js",
-    "update-ip": "node scripts/detect-ip.js",
-    "prestart": "node scripts/detect-ip.js",
-    "start": "expo start",
-    "predev": "node scripts/detect-ip.js",
-    "dev": "expo start",
-    "preandroid": "node scripts/detect-ip.js",
+    "start": "expo start --tunnel",
+    "start:lan": "expo start",
+    "dev": "expo start --tunnel",
     "android": "expo start --android",
-    "preios": "node scripts/detect-ip.js",
     "ios": "expo start --ios",
-    "preweb": "node scripts/detect-ip.js",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "update-ip": "node scripts/detect-ip.js",
+    "detect-ip": "node scripts/detect-ip.js"
   },
   "private": true
 }

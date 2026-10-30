@@ -2,9 +2,11 @@ import React from "react";
 import { View, Text, StyleSheet, Pressable } from "react-native";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import type { Destination } from "@/data/destinations";
+import { Ionicons } from "@expo/vector-icons";
+import type { Destination } from "@/types/destination";
 import { Colors, Shadows } from "@/constants/theme";
 import { useBrandConfig } from "@/contexts/BrandConfigContext";
+import { useWishlist } from "@/contexts/WishlistContext";
 
 interface DestinationCardProps {
   destination: Destination;
@@ -14,6 +16,8 @@ interface DestinationCardProps {
 export function DestinationCard({ destination, onPress }: DestinationCardProps) {
   const router = useRouter();
   const { primaryColor } = useBrandConfig();
+  const { isWishlisted, toggleWishlist } = useWishlist();
+  const wishlisted = isWishlisted(destination.id);
 
   return (
     <Pressable
@@ -30,6 +34,26 @@ export function DestinationCard({ destination, onPress }: DestinationCardProps) 
           contentFit="cover"
           transition={300}
         />
+
+        {/* Heart Wishlist Button */}
+        <Pressable
+          style={({ pressed }) => [
+            styles.heartButton,
+            pressed && { transform: [{ scale: 0.9 }] },
+          ]}
+          hitSlop={10}
+          onPress={(e) => {
+            e.stopPropagation();
+            toggleWishlist(destination.id);
+          }}
+        >
+          <Ionicons
+            name={wishlisted ? "heart" : "heart-outline"}
+            size={18}
+            color={wishlisted ? primaryColor : "#475569"}
+          />
+        </Pressable>
+
         {destination.rating ? (
           <View style={styles.ratingBadge}>
             <Text style={styles.ratingText}>★ {destination.rating}</Text>
@@ -86,6 +110,19 @@ const styles = StyleSheet.create({
   image: {
     width: "100%",
     height: "100%",
+  },
+  heartButton: {
+    position: "absolute",
+    top: 12,
+    left: 12,
+    backgroundColor: "rgba(255, 255, 255, 0.92)",
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 10,
+    ...Shadows.sm,
   },
   ratingBadge: {
     position: "absolute",

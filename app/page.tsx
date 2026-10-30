@@ -3,6 +3,9 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAppConfig } from "@/components/RemoteConfigProvider";
+import { getDestinations, type Destination } from "@/lib/apiClient";
+import DestinationCard from "@/components/DestinationCard";
+import { Skeleton } from "@/components/ui/Skeleton";
 
 interface ServiceModuleItem {
   serviceTypeId?: number;
@@ -310,6 +313,34 @@ export default function HomePage() {
   const [selectedStar, setSelectedStar] = useState<string>("All");
   const [selectedCategory, setSelectedCategory] = useState<string>("Hotel");
   const [selectedStyle, setSelectedStyle] = useState<string>("All");
+
+  // Featured Destinations from API
+  const [featuredDestinations, setFeaturedDestinations] = useState<Destination[]>([]);
+  const [destLoading, setDestLoading] = useState(true);
+  const [destError, setDestError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    setDestLoading(true);
+    setDestError(null);
+    getDestinations()
+      .then((data) => {
+        if (isMounted) {
+          setFeaturedDestinations(data.slice(0, 6));
+          setDestLoading(false);
+        }
+      })
+      .catch((err) => {
+        if (isMounted) {
+          setDestError(err instanceof Error ? err.message : "Failed to load destinations");
+          setDestLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [activeBrandKey]);
 
   // WhatsApp Contact Phone
   const rawPhone = contacts.phones[0]?.value || branding.phone || "+91 9875095616";
@@ -779,64 +810,48 @@ export default function HomePage() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {heroContent.destinations.map((dest) => (
-            <div
-              key={dest.id}
-              className="group overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl"
+        {destLoading ? (
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-4">
+                <Skeleton className="h-48 w-full rounded-xl" />
+                <div className="mt-4 space-y-2">
+                  <Skeleton className="h-6 w-3/4" />
+                  <Skeleton className="h-4 w-1/2" />
+                  <Skeleton className="h-4 w-full" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : destError ? (
+          <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-center text-sm text-red-700">
+            <p>{destError}</p>
+            <button
+              type="button"
+              onClick={() => {
+                setDestLoading(true);
+                getDestinations()
+                  .then((data) => {
+                    setFeaturedDestinations(data.slice(0, 6));
+                    setDestLoading(false);
+                  })
+                  .catch((e) => {
+                    setDestError(e instanceof Error ? e.message : "Failed to load destinations");
+                    setDestLoading(false);
+                  });
+              }}
+              className="mt-3 rounded-full bg-red-600 px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-red-700"
             >
-              <div className="relative h-44 sm:h-48 w-full overflow-hidden bg-slate-100">
-                <img
-                  src={dest.image}
-                  alt={dest.title}
-                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-                <span className="absolute top-3 left-3 rounded-full bg-black/60 px-2.5 py-0.5 text-xs font-bold text-white backdrop-blur-sm">
-                  {dest.badge}
-                </span>
-                <span className="absolute bottom-3 right-3 rounded-lg bg-white/95 px-2 py-0.5 text-xs font-bold text-slate-900 shadow">
-                  ⭐ {dest.rating}
-                </span>
-              </div>
-
-              <div className="p-4 sm:p-5">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-base sm:text-lg font-bold text-slate-900 transition-colors">
-                    {dest.title}
-                  </h3>
-                  <span className="text-xs font-medium text-slate-500 shrink-0 ml-2">
-                    {dest.days}
-                  </span>
-                </div>
-                <p className="mt-1 text-xs text-slate-600 line-clamp-1">
-                  {dest.subtitle}
-                </p>
-
-                <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">
-                  <div>
-                    <span className="text-[11px] text-slate-400">
-                      {activeBrandKey === "mytravel" ? "Net B2B from" : "Starting from"}
-                    </span>
-                    <p
-                      className="text-base font-extrabold"
-                      style={{ color: resolvedPrimary }}
-                    >
-                      {dest.price}
-                    </p>
-                  </div>
-
-                  <Link
-                    href={`/trips/create?dest=${encodeURIComponent(dest.title)}`}
-                    className="flex min-h-9 items-center justify-center rounded-xl px-3.5 py-1.5 text-xs font-bold text-white transition-opacity hover:opacity-90"
-                    style={{ backgroundColor: resolvedPrimary }}
-                  >
-                    {activeBrandKey === "mytravel" ? "Book Net" : "Explore"}
-                  </Link>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+              Retry
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {featuredDestinations.map((dest) => (
+              <DestinationCard key={dest.id} destination={dest} />
+            ))}
+          </div>
+        )}
       </section>
 
       {/* ========================================================

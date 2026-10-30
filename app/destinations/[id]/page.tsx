@@ -1,43 +1,65 @@
 "use client";
 
 import Image from "next/image";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { getDestinationById } from "@/data/destinations";
+import { useEffect, useState } from "react";
+import { getDestination, type Destination } from "@/lib/apiClient";
 import { ReviewsSection } from "@/components/reviews/ReviewsSection";
 import { useAppConfig } from "@/components/RemoteConfigProvider";
+import { useWishlist } from "@/components/wishlist/WishlistProvider";
+import { BrandRouteLoading } from "@/components/loading/BrandLoading";
+import { BrandErrorState } from "@/components/brand/BrandState";
 
 export default function DestinationDetailPage() {
   const params = useParams<{ id: string }>();
-  const { branding } = useAppConfig();
+  const router = useRouter();
+  const { branding, primaryColor } = useAppConfig();
+  const { isWishlisted, toggleWishlist } = useWishlist();
 
   const id = params.id;
-  const destination = getDestinationById(id);
+  const [destination, setDestination] = useState<Destination | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  /*
-   * This is a Client Component, so we do not use:
-   * generateStaticParams()
-   *
-   * We also avoid notFound() here and render a simple
-   * not-found state instead.
-   */
-  if (!destination) {
+  useEffect(() => {
+    if (!id) return;
+    let isMounted = true;
+    setLoading(true);
+    setError(null);
+
+    getDestination(id)
+      .then((data) => {
+        if (isMounted) {
+          setDestination(data);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        if (isMounted) {
+          setError(err instanceof Error ? err.message : "Destination not found.");
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [id]);
+
+  if (loading) {
+    return <BrandRouteLoading />;
+  }
+
+  if (error || !destination) {
     return (
       <main className="mx-auto max-w-4xl px-6 py-24 text-center">
-        <h1 className="text-3xl font-semibold text-slate-900">
-          Destination not found
-        </h1>
-
-        <p className="mt-3 text-slate-600">
-          The destination you are looking for does not exist.
-        </p>
-
-        <Link
-          href="/destinations"
-          className="mt-6 inline-flex rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-700"
-        >
-          Back to destinations
-        </Link>
+        <BrandErrorState
+          title="Destination not found"
+          description={error || "The destination you are looking for does not exist."}
+          actionLabel="Back to destinations"
+          onAction={() => router.push("/destinations")}
+        />
       </main>
     );
   }
@@ -48,6 +70,11 @@ export default function DestinationDetailPage() {
   const isWanderly = brandKey === "wanderly";
   const isTravelPro = brandKey === "travelpro";
 
+  const brandColor =
+    primaryColor ||
+    (isWanderly ? "#2882c5" : isTravelPro ? "#FF932C" : "#00aacf");
+
+  const wishlisted = isWishlisted(destination.id);
   const ctaHref = `/trips/create?destinationId=${destination.id}`;
 
   /*
@@ -90,6 +117,36 @@ export default function DestinationDetailPage() {
                       priority
                       unoptimized
                     />
+
+                    {/* Wishlist Button */}
+                    <button
+                      type="button"
+                      id={`wishlist-btn-${destination.id}`}
+                      aria-label={
+                        wishlisted
+                          ? `Remove ${destination.name} from wishlist`
+                          : `Add ${destination.name} to wishlist`
+                      }
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        toggleWishlist(destination.id);
+                      }}
+                      className="absolute right-4 top-4 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-white/90 shadow-md backdrop-blur-sm transition-transform duration-200 hover:scale-110 active:scale-95"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        className="h-6 w-6 transition-colors duration-200"
+                        fill={wishlisted ? brandColor : "none"}
+                        stroke={wishlisted ? brandColor : "#475569"}
+                        strokeWidth="2.2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+                      </svg>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -239,6 +296,36 @@ export default function DestinationDetailPage() {
                       priority
                       unoptimized
                     />
+
+                    {/* Wishlist Button */}
+                    <button
+                      type="button"
+                      id={`wishlist-btn-${destination.id}`}
+                      aria-label={
+                        wishlisted
+                          ? `Remove ${destination.name} from wishlist`
+                          : `Add ${destination.name} to wishlist`
+                      }
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        toggleWishlist(destination.id);
+                      }}
+                      className="absolute right-4 top-4 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-white/90 shadow-md backdrop-blur-sm transition-transform duration-200 hover:scale-110 active:scale-95"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        className="h-6 w-6 transition-colors duration-200"
+                        fill={wishlisted ? brandColor : "none"}
+                        stroke={wishlisted ? brandColor : "#475569"}
+                        strokeWidth="2.2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+                      </svg>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -394,6 +481,36 @@ export default function DestinationDetailPage() {
                     priority
                     unoptimized
                   />
+
+                  {/* Wishlist Button */}
+                  <button
+                    type="button"
+                    id={`wishlist-btn-${destination.id}`}
+                    aria-label={
+                      wishlisted
+                        ? `Remove ${destination.name} from wishlist`
+                        : `Add ${destination.name} to wishlist`
+                    }
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      toggleWishlist(destination.id);
+                    }}
+                    className="absolute right-4 top-4 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-white/90 shadow-md backdrop-blur-sm transition-transform duration-200 hover:scale-110 active:scale-95"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      className="h-6 w-6 transition-colors duration-200"
+                      fill={wishlisted ? brandColor : "none"}
+                      stroke={wishlisted ? brandColor : "#475569"}
+                      strokeWidth="2.2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+                    </svg>
+                  </button>
                 </div>
               </div>
             </div>

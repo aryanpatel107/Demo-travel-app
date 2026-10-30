@@ -3,12 +3,25 @@ export interface Destination {
   name: string;
   country: string;
   description: string;
-  longDescription: string;
+  longDescription?: string;
   imageUrl: string;
   price: number;
-  rating: number;
-  tags: string[];
+  currency?: string;
+  durationDays?: number;
   duration: string; // e.g. "5-7 days"
+  tags: string[];
+  rating: number;
+  isActive?: boolean;
+  brand?: string | null;
+}
+
+export interface WishlistItem {
+  id: string;
+  userId: string;
+  brandId: string;
+  destinationId: string;
+  createdAt: string;
+  destination: Destination;
 }
 
 export interface Trip {

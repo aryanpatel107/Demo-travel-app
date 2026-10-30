@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 
 import {
   ApiError,
@@ -16,8 +16,10 @@ import {
   type AuthUser,
 } from "@/components/auth/AuthProvider";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnUrl = searchParams.get("returnUrl");
 
   const { login } = useAuth();
 
@@ -91,7 +93,8 @@ export default function LoginPage() {
        * authentication state before navigating.
        */
       setTimeout(() => {
-        router.push("/");
+        const dest = returnUrl ? decodeURIComponent(returnUrl) : "/";
+        router.push(dest);
         router.refresh();
       }, 500);
     } catch (error) {
@@ -194,7 +197,7 @@ export default function LoginPage() {
         <p className="mt-5 sm:mt-6 text-center text-sm text-slate-600">
           Need an account?{" "}
           <Link
-            href="/register"
+            href={returnUrl ? `/register?returnUrl=${encodeURIComponent(returnUrl)}` : "/register"}
             className="font-semibold text-sky-700 hover:underline"
           >
             Register
@@ -202,5 +205,13 @@ export default function LoginPage() {
         </p>
       </div>
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="flex min-h-[50vh] items-center justify-center text-slate-500">Loading...</div>}>
+      <LoginForm />
+    </Suspense>
   );
 }

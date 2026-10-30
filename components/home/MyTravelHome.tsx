@@ -1,16 +1,37 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { useAppConfig } from "@/components/RemoteConfigProvider";
 import DestinationGrid from "@/components/DestinationGrid";
 import Testimonials from "@/components/Testimonials";
 import CTASection from "@/components/CTASection";
-import { destinations } from "@/data/destinations";
-
-const featured = destinations.slice(0, 3);
+import { getDestinations, type Destination } from "@/lib/apiClient";
 
 export default function MyTravelHome() {
   const { remoteConfig, branding, primaryColor, secondaryColor } = useAppConfig();
+  const [destinationsList, setDestinationsList] = useState<Destination[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    getDestinations()
+      .then((data) => {
+        if (isMounted) {
+          setDestinationsList(data);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to load MyTravel destinations:", err);
+        if (isMounted) setLoading(false);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const featured = destinationsList.slice(0, 3);
 
   const websiteName = remoteConfig?.website?.name?.trim() || branding.name || "MyTravel";
 

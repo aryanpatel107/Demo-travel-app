@@ -7,20 +7,31 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useRouter } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useBrandConfig } from "@/contexts/BrandConfigContext";
 import { useAuth } from "@/contexts/AuthContext";
 import BrandLogo from "@/components/BrandLogo";
 
+import { FontAwesome5 } from "@expo/vector-icons";
+import { useWishlist } from "@/contexts/WishlistContext";
+
 export default function Navbar() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { branding, brandKey } = useBrandConfig();
   const { user, isAuthenticated, logout, loading: authLoading } = useAuth();
+  const { wishlistCount } = useWishlist();
 
   const primaryColor = branding.primaryColor || "#2882c5";
   const brandName = branding.name || "Travel App";
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        { paddingTop: Math.max(insets.top, 12) + 6 },
+      ]}
+    >
       {/* Brand Logo */}
       <Pressable
         style={styles.brandRow}
@@ -42,6 +53,26 @@ export default function Navbar() {
           <ActivityIndicator size="small" color={primaryColor} />
         ) : isAuthenticated && user ? (
           <View style={styles.userContainer}>
+            <Pressable
+              onPress={() => router.push("/(tabs)/wishlist" as never)}
+              style={({ pressed }) => [
+                styles.wishlistNavBtn,
+                pressed && styles.pressed,
+              ]}
+              accessibilityLabel="Wishlist"
+            >
+              <FontAwesome5 name="heart" size={16} color={primaryColor} />
+              {wishlistCount > 0 && (
+                <View
+                  style={[
+                    styles.navBadge,
+                    { backgroundColor: primaryColor },
+                  ]}
+                >
+                  <Text style={styles.navBadgeText}>{wishlistCount}</Text>
+                </View>
+              )}
+            </Pressable>
             <Text style={styles.userGreeting} numberOfLines={1}>
               Hi, {user?.name?.trim() ? user.name.trim().split(" ")[0] : "User"}
             </Text>
@@ -102,6 +133,31 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
+  },
+  wishlistNavBtn: {
+    position: "relative",
+    padding: 6,
+    borderRadius: 8,
+    backgroundColor: "#F8FAFC",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    marginRight: 2,
+  },
+  navBadge: {
+    position: "absolute",
+    top: -4,
+    right: -4,
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 3,
+  },
+  navBadgeText: {
+    color: "#FFFFFF",
+    fontSize: 9,
+    fontWeight: "800",
   },
   userGreeting: {
     fontSize: 13,

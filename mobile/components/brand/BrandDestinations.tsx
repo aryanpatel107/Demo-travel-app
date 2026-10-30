@@ -1,16 +1,33 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, Pressable } from "react-native";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useAppConfig } from "@/contexts/BrandConfigContext";
-import { destinations } from "@/data/destinations";
+import { getDestinations } from "@/lib/apiClient";
+import type { Destination } from "@/types/destination";
 import { theme } from "@/constants/theme";
-
-const featured = destinations.slice(0, 4);
 
 export default function BrandDestinations() {
   const router = useRouter();
   const { branding, brandKey, primaryColor } = useAppConfig();
+  const [destinationsList, setDestinationsList] = useState<Destination[]>([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    (async () => {
+      try {
+        const data = await getDestinations(undefined, brandKey);
+        if (isMounted) setDestinationsList(data);
+      } catch (err) {
+        console.error("[BrandDestinations] Failed to load destinations:", err);
+      }
+    })();
+    return () => {
+      isMounted = false;
+    };
+  }, [brandKey]);
+
+  const featured = destinationsList.slice(0, 4);
 
   const brandName = branding.name?.trim() || "";
   const normalizedBrandName = brandName.toLowerCase().replace(/\s+/g, "");

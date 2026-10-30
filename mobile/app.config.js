@@ -1,11 +1,4 @@
 module.exports = ({ config }) => {
-  // Automatically detect and sync machine's active LAN IP for physical device testing
-  try {
-    const { detectAndSyncIp } = require("./scripts/detect-ip");
-    detectAndSyncIp();
-  } catch (err) {
-    // Non-fatal fallback
-  }
 
   // Determine active brand from environment variable or active hostname
   const rawBrand = (process.env.APP_BRAND || "").toLowerCase().trim();

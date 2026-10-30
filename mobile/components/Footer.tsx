@@ -1,11 +1,13 @@
 import React from "react";
 import { View, Text, StyleSheet, Pressable, Linking } from "react-native";
 import { useRouter } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAppConfig } from "@/contexts/BrandConfigContext";
 import { theme } from "@/constants/theme";
 
 export default function Footer() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const {
     config,
     branding,
@@ -40,7 +42,12 @@ export default function Footer() {
   ];
 
   return (
-    <View style={styles.footer}>
+    <View
+      style={[
+        styles.footer,
+        { paddingBottom: Math.max(insets.bottom, 16) + 24 },
+      ]}
+    >
       <View style={styles.content}>
         <View style={styles.brandSection}>
           <Text style={styles.brandTitle}>{brandName}</Text>

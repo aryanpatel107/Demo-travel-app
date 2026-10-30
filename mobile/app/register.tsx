@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useBrandConfig } from "@/contexts/BrandConfigContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { registerApi } from "@/lib/apiClient";
@@ -20,6 +21,7 @@ import BrandLogo from "@/components/BrandLogo";
 
 export default function RegisterScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { branding, brandKey } = useBrandConfig();
   const { login } = useAuth();
 
@@ -98,7 +100,16 @@ export default function RegisterScreen() {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.keyboardContainer}
     >
-      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        contentContainerStyle={[
+          styles.container,
+          {
+            paddingTop: Math.max(insets.top, 24) + 16,
+            paddingBottom: Math.max(insets.bottom, 24) + 20,
+          },
+        ]}
+        keyboardShouldPersistTaps="handled"
+      >
         <View style={styles.card}>
           {/* Brand Header */}
           <View style={styles.brandHeader}>

@@ -1,9 +1,8 @@
-
 "use client";
 
 import Image from "next/image";
 import Link from "next/link";
-import { memo, useMemo, useState } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 
 import SearchBar from "@/components/SearchBar";
 import DestinationGrid from "@/components/DestinationGrid";
@@ -12,7 +11,10 @@ import {
   BrandErrorState,
 } from "@/components/brand/BrandState";
 import { useAppConfig } from "@/components/RemoteConfigProvider";
-import { destinations } from "@/data/destinations";
+import { getDestinations } from "@/lib/apiClient";
+import { Destination } from "@/types/destination";
+import { DestinationExplorerSkeleton } from "@/components/loading/BrandLoading";
+import { useWishlist } from "@/components/wishlist/WishlistProvider";
 
 const categories = [
   "ALL",
@@ -23,7 +25,10 @@ const categories = [
 ] as const;
 
 export default function DestinationsPage() {
-  const { branding } = useAppConfig();
+  const { branding, primaryColor } = useAppConfig();
+  const [destinations, setDestinations] = useState<Destination[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const [query, setQuery] = useState("");
   const [activeCategory, setActiveCategory] =
@@ -35,6 +40,23 @@ export default function DestinationsPage() {
   const isWanderly = brandKey === "wanderly";
   const isTravelPro = brandKey === "travelpro";
   const isMyTravel = brandKey === "mytravel";
+
+  const loadDestinations = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await getDestinations();
+      setDestinations(data);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to load destinations.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadDestinations();
+  }, []);
 
   const resetFilters = () => {
     setQuery("");
@@ -60,19 +82,23 @@ export default function DestinationsPage() {
 
       return matchesQuery && matchesCategory;
     });
-  }, [query, activeCategory]);
+  }, [destinations, query, activeCategory]);
 
   const featured = filtered[0];
   const secondary = filtered.slice(1);
 
-  if (!Array.isArray(destinations) || destinations.length === 0) {
+  if (loading) {
+    return <DestinationExplorerSkeleton />;
+  }
+
+  if (error) {
     return (
       <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
         <BrandErrorState
           title="Destinations are temporarily unavailable"
-          description="We couldn’t load the destination list right now. Please try again in a moment."
+          description={error}
           actionLabel="Try Again"
-          onAction={() => window.location.reload()}
+          onAction={loadDestinations}
         />
       </section>
     );
@@ -260,12 +286,16 @@ export default function DestinationsPage() {
 const DestinationGridItem = memo(function DestinationGridItem({
   destination,
 }: {
-  destination: (typeof destinations)[number];
+  destination: Destination;
 }) {
+  const { primaryColor } = useAppConfig();
+  const { isWishlisted, toggleWishlist } = useWishlist();
+  const wishlisted = isWishlisted(destination.id);
+
   return (
     <Link
       href={`/destinations/${destination.id}`}
-      className="wanderly-destinations__mini-card"
+      className="wanderly-destinations__mini-card relative group block"
     >
       <div className="wanderly-destinations__mini-image relative">
         <Image
@@ -276,6 +306,29 @@ const DestinationGridItem = memo(function DestinationGridItem({
           className="object-cover"
           unoptimized
         />
+
+        {/* Wishlist toggle button */}
+        <button
+          type="button"
+          aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleWishlist(destination.id);
+          }}
+          className="absolute left-2.5 top-2.5 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur-sm transition hover:scale-110 active:scale-90"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            className="h-4 w-4"
+            fill={wishlisted ? primaryColor || "#d96a3a" : "none"}
+            stroke={wishlisted ? primaryColor || "#d96a3a" : "#475569"}
+            strokeWidth="2.2"
+          >
+            <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+          </svg>
+        </button>
       </div>
 
       <div className="p-4">
@@ -300,4 +353,3 @@ const DestinationGridItem = memo(function DestinationGridItem({
     </Link>
   );
 });
-

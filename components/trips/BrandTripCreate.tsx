@@ -1,9 +1,8 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { destinations } from "@/data/destinations";
-import { apiFetch } from "@/lib/apiClient";
+import { apiFetch, getDestinations, type Destination } from "@/lib/apiClient";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { useAppConfig } from "@/components/RemoteConfigProvider";
 
@@ -149,9 +148,33 @@ export default function BrandTripCreate() {
   const [tripStage, setTripStage] = useState<TripStage>("form");
   const [activeStep, setActiveStep] = useState(0);
 
+  const [destinationsList, setDestinationsList] = useState<Destination[]>([]);
+  const [loadingDestinations, setLoadingDestinations] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    setLoadingDestinations(true);
+    getDestinations()
+      .then((data) => {
+        if (isMounted) {
+          setDestinationsList(data);
+          setLoadingDestinations(false);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to load destinations:", err);
+        if (isMounted) {
+          setLoadingDestinations(false);
+        }
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const selectedDestination = useMemo(
-    () => destinations.find((d) => d.id === trip.destinationId) ?? null,
-    [trip.destinationId],
+    () => destinationsList.find((d) => d.id === trip.destinationId) ?? null,
+    [destinationsList, trip.destinationId],
   );
 
   const summaryDates = useMemo(
@@ -610,40 +633,50 @@ export default function BrandTripCreate() {
               </p>
 
               <div className="mt-5 sm:mt-6 grid gap-3 sm:grid-cols-2">
-                {destinations.map((destination) => {
-                  const isSelected = trip.destinationId === destination.id;
+                {loadingDestinations ? (
+                  <div className="col-span-full py-8 text-center text-sm text-slate-500">
+                    Loading destinations...
+                  </div>
+                ) : destinationsList.length === 0 ? (
+                  <div className="col-span-full py-8 text-center text-sm text-slate-500">
+                    No destinations available.
+                  </div>
+                ) : (
+                  destinationsList.map((destination) => {
+                    const isSelected = trip.destinationId === destination.id;
 
-                  return (
-                    <button
-                      key={destination.id}
-                      type="button"
-                      onClick={() => {
-                        clearFieldError("destinationId");
-                        updateTrip({ destinationId: destination.id });
-                      }}
-                      className={`min-h-11 rounded-2xl border p-4 sm:p-5 text-left transition ${isSelected
-                        ? "border-violet-500 bg-violet-50 ring-2 ring-violet-200"
-                        : "border-violet-100 bg-[#faf7ff] hover:border-violet-300"
-                        }`}
-                    >
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <p className="text-base sm:text-lg font-semibold text-[#1f2937]">
-                            {destination.name}
-                          </p>
-                          <p className="mt-0.5 sm:mt-1 text-xs sm:text-sm text-[#4b5563]">
-                            {destination.country}
-                          </p>
+                    return (
+                      <button
+                        key={destination.id}
+                        type="button"
+                        onClick={() => {
+                          clearFieldError("destinationId");
+                          updateTrip({ destinationId: destination.id });
+                        }}
+                        className={`min-h-11 rounded-2xl border p-4 sm:p-5 text-left transition ${isSelected
+                          ? "border-violet-500 bg-violet-50 ring-2 ring-violet-200"
+                          : "border-violet-100 bg-[#faf7ff] hover:border-violet-300"
+                          }`}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <p className="text-base sm:text-lg font-semibold text-[#1f2937]">
+                              {destination.name}
+                            </p>
+                            <p className="mt-0.5 sm:mt-1 text-xs sm:text-sm text-[#4b5563]">
+                              {destination.country}
+                            </p>
+                          </div>
+                          {isSelected && (
+                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-violet-600 text-xs text-white shrink-0 ml-2">
+                              ✓
+                            </span>
+                          )}
                         </div>
-                        {isSelected && (
-                          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-violet-600 text-xs text-white shrink-0 ml-2">
-                            ✓
-                          </span>
-                        )}
-                      </div>
-                    </button>
-                  );
-                })}
+                      </button>
+                    );
+                  })
+                )}
               </div>
 
               {formErrors.destinationId && (

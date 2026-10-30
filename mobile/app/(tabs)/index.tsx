@@ -1,5 +1,6 @@
 import React from "react";
 import { View, StyleSheet, ScrollView } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAppConfig } from "@/contexts/BrandConfigContext";
 import BrandHero from "@/components/brand/BrandHero";
 import BrandModules from "@/components/brand/BrandModules";
@@ -12,6 +13,7 @@ import MyTravelHome from "@/components/home/MyTravelHome";
 import Footer from "@/components/Footer";
 
 export default function HomeScreen() {
+  const insets = useSafeAreaInsets();
   const { brandKey, branding } = useAppConfig();
 
   const brandName = branding.name?.trim().toLowerCase() || "";
@@ -27,7 +29,10 @@ export default function HomeScreen() {
   return (
     <ScrollView
       style={styles.container}
-      contentContainerStyle={styles.content}
+      contentContainerStyle={[
+        styles.content,
+        { paddingBottom: Math.max(insets.bottom, 16) + 24 },
+      ]}
       showsVerticalScrollIndicator={false}
     >
       {/* Brand-Specific Home Views */}

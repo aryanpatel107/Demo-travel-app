@@ -9,12 +9,14 @@ import {
   RefreshControl,
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useBrandConfig } from '@/contexts/BrandConfigContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { getTripsApi, type TripItem } from '@/lib/apiClient';
 
 export default function TripsScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { branding, brandKey } = useBrandConfig();
   const { isAuthenticated } = useAuth();
 
@@ -70,7 +72,10 @@ export default function TripsScreen() {
   return (
     <ScrollView
       style={styles.container}
-      contentContainerStyle={styles.content}
+      contentContainerStyle={[
+        styles.content,
+        { paddingBottom: Math.max(insets.bottom, 16) + 40 },
+      ]}
       showsVerticalScrollIndicator={false}
       refreshControl={
         isAuthenticated ? (

@@ -10,10 +10,10 @@ import {
 } from "react-native";
 import { Image } from "expo-image";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { destinations } from "@/data/destinations";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { useAppConfig } from "@/contexts/BrandConfigContext";
-import { createTripApi, checkoutPaymentApi, type CheckoutResponse } from "@/lib/apiClient";
+import { getDestinations, createTripApi, checkoutPaymentApi, type CheckoutResponse } from "@/lib/apiClient";
+import type { Destination } from "@/types/destination";
 import { theme } from "@/constants/theme";
 
 /* -------------------------------------------------------------------------- */
@@ -229,10 +229,26 @@ export default function BrandTripCreate() {
   const [createdTrip, setCreatedTrip] = useState<TripResponse | null>(null);
   const [tripStage, setTripStage] = useState<TripStage>("form");
   const [activeStep, setActiveStep] = useState(0);
+  const [destinationsList, setDestinationsList] = useState<Destination[]>([]);
+
+  React.useEffect(() => {
+    let isMounted = true;
+    (async () => {
+      try {
+        const data = await getDestinations(undefined, brandKey);
+        if (isMounted) setDestinationsList(data);
+      } catch (err) {
+        console.error("[BrandTripCreate] Failed to load destinations:", err);
+      }
+    })();
+    return () => {
+      isMounted = false;
+    };
+  }, [brandKey]);
 
   const selectedDestination = useMemo(
-    () => destinations.find((d) => d.id === trip.destinationId) ?? null,
-    [trip.destinationId]
+    () => destinationsList.find((d) => d.id === trip.destinationId) ?? null,
+    [destinationsList, trip.destinationId]
   );
 
   const summaryDates = useMemo(
@@ -718,6 +734,24 @@ export default function BrandTripCreate() {
       showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps="handled"
     >
+      {/* Top Back Row */}
+      <View style={styles.topBackRow}>
+        <Pressable
+          style={styles.topBackBtn}
+          onPress={() => {
+            if (router.canGoBack()) {
+              router.back();
+            } else {
+              router.replace("/(tabs)" as never);
+            }
+          }}
+          accessibilityLabel="Back to previous screen"
+          accessibilityRole="button"
+        >
+          <Text style={[styles.topBackText, { color: primary }]}>← Back</Text>
+        </Pressable>
+      </View>
+
       {/* Brand Header */}
       <View style={styles.header}>
         <Text style={[styles.kicker, { color: primary }]}>{brandName.toUpperCase()}</Text>
@@ -790,7 +824,7 @@ export default function BrandTripCreate() {
             </Text>
 
             <View style={styles.destGrid}>
-              {destinations.map((destination) => {
+              {destinationsList.map((destination) => {
                 const isSelected = trip.destinationId === destination.id;
 
                 return (
@@ -1373,6 +1407,20 @@ const styles = StyleSheet.create({
   },
 
   /* Header */
+  topBackRow: {
+    paddingHorizontal: 4,
+    paddingBottom: 8,
+    alignItems: "flex-start",
+  },
+  topBackBtn: {
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+  },
+  topBackText: {
+    fontSize: 14,
+    fontWeight: "700",
+  },
   header: {
     alignItems: "center",
     marginBottom: 20,

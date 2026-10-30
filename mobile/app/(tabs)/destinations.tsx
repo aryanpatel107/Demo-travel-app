@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -6,10 +6,14 @@ import {
   FlatList,
   Pressable,
   ScrollView,
+  ActivityIndicator,
+  RefreshControl,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { useAppConfig } from "@/contexts/BrandConfigContext";
-import { destinations, Destination } from "@/data/destinations";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useBrandConfig } from "@/contexts/BrandConfigContext";
+import { getDestinations } from "@/lib/apiClient";
+import type { Destination } from "@/types/destination";
 import SearchBar from "@/components/SearchBar";
 import DestinationCard from "@/components/DestinationCard";
 import { BrandEmptyState } from "@/components/brand/BrandState";
@@ -19,13 +23,43 @@ const categories = ["ALL", "ADVENTURE", "BEACH", "CULTURE", "NATURE"] as const;
 
 export default function DestinationsScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ q?: string; to?: string; search?: string }>();
-  const { branding, primaryColor } = useAppConfig();
+  const { branding, primaryColor, brandKey } = useBrandConfig();
+
+  const [destinationsList, setDestinationsList] = useState<Destination[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const [searchQuery, setSearchQuery] = useState(
     params.q || params.to || params.search || ""
   );
   const [activeCategory, setActiveCategory] = useState<(typeof categories)[number]>("ALL");
+
+  const loadDestinations = useCallback(async () => {
+    try {
+      setError(null);
+      const data = await getDestinations(undefined, brandKey);
+      setDestinationsList(data);
+    } catch (err: unknown) {
+      console.error("[Mobile Destinations] Failed to load destinations:", err);
+      setError("Failed to load destinations. Please check your connection.");
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, [brandKey]);
+
+  useEffect(() => {
+    setLoading(true);
+    loadDestinations();
+  }, [loadDestinations]);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    loadDestinations();
+  }, [loadDestinations]);
 
   useEffect(() => {
     const qParam = params.q || params.to || params.search;
@@ -41,7 +75,7 @@ export default function DestinationsScreen() {
     const q = searchQuery.trim().toLowerCase();
     const cat = activeCategory.toLowerCase();
 
-    return destinations.filter((d) => {
+    return destinationsList.filter((d) => {
       const matchesQuery =
         !q ||
         d.name.toLowerCase().includes(q) ||
@@ -53,7 +87,7 @@ export default function DestinationsScreen() {
 
       return matchesQuery && matchesCat;
     });
-  }, [searchQuery, activeCategory]);
+  }, [destinationsList, searchQuery, activeCategory]);
 
   return (
     <View style={styles.container}>
@@ -108,29 +142,47 @@ export default function DestinationsScreen() {
       </View>
 
       {/* Destinations List */}
-      <FlatList
-        data={filtered}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          <BrandEmptyState
-            title="No destinations found"
-            description={`No destinations match "${searchQuery}". Try selecting another category or clearing your search.`}
-            actionLabel="Reset filters"
-            onAction={() => {
-              setSearchQuery("");
-              setActiveCategory("ALL");
-            }}
-          />
-        }
-        renderItem={({ item }) => (
-          <DestinationCard
-            destination={item}
-            onPress={() => router.push(`/destinations/${item.id}` as any)}
-          />
-        )}
-      />
+      {loading && !refreshing ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={primary} />
+          <Text style={styles.loadingText}>Loading destinations...</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={filtered}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={[
+            styles.listContent,
+            { paddingBottom: Math.max(insets.bottom, 16) + 32 },
+          ]}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[primary]} tintColor={primary} />
+          }
+          ListEmptyComponent={
+            <BrandEmptyState
+              title={error ? "Unable to load" : "No destinations found"}
+              description={error || `No destinations match "${searchQuery}". Try selecting another category or clearing your search.`}
+              actionLabel={error ? "Try Again" : "Reset filters"}
+              onAction={() => {
+                if (error) {
+                  setLoading(true);
+                  loadDestinations();
+                } else {
+                  setSearchQuery("");
+                  setActiveCategory("ALL");
+                }
+              }}
+            />
+          }
+          renderItem={({ item }) => (
+            <DestinationCard
+              destination={item}
+              onPress={() => router.push(`/destinations/${item.id}` as any)}
+            />
+          )}
+        />
+      )}
     </View>
   );
 }
@@ -199,5 +251,17 @@ const styles = StyleSheet.create({
     padding: 16,
     gap: 16,
     paddingBottom: 32,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 60,
+    gap: 12,
+  },
+  loadingText: {
+    fontSize: 14,
+    color: "#64748b",
+    fontWeight: "500",
   },
 });

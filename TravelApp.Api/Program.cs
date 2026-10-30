@@ -54,11 +54,12 @@ builder.Services.AddScoped<BrandContext>();
 builder.Services.AddScoped<JwtTokenService>();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(
-        builder.Configuration.GetConnectionString(
-            "DefaultConnection"
-        )
-    ));
+{
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "Data Source=travelapp.db";
+    options.UseSqlite(connectionString);
+    options.ConfigureWarnings(w =>
+        w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+});
 
 var jwtKey =
     builder.Configuration["Jwt:Key"]
@@ -363,6 +364,12 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+ 
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.EnsureCreated();
+}
 
 if (app.Environment.IsDevelopment())
 {

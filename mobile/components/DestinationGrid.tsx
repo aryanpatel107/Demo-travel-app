@@ -1,6 +1,6 @@
 import React from "react";
 import { View, StyleSheet, Text } from "react-native";
-import type { Destination } from "@/data/destinations";
+import type { Destination } from "@/types/destination";
 import { DestinationCard } from "./DestinationCard";
 import { Colors } from "@/constants/theme";
 
